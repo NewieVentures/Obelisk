@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name dmx_module)(type KiCad)(uri ${KIPRJMOD}/dmx_module.pretty)(options "")(descr "")(disabled))
+  (lib (name project_parts)(type KiCad)(uri /home/mitchell/workspace/skate_park_obelisk/sch/project_parts.pretty)(options "")(descr ""))
+)
