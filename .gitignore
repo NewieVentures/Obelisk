@@ -1,0 +1,4 @@
+output
+tests
+src/**/*.bin
+src/**/*.o
