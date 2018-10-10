@@ -35,7 +35,7 @@ U 1 1 5BB06A7D
 P 6650 3600
 F 0 "U1" H 6850 3000 50  0000 C CNN
 F 1 "SP485E" H 6950 2900 50  0000 C CNN
-F 2 "Package_SO:SO-8_5.3x6.2mm_P1.27mm" H 6650 2900 50  0001 C CNN
+F 2 "project_parts:SO-8_5.3x6.2mm_P1.27mm" H 6650 2900 50  0001 C CNN
 F 3 "https://datasheets.maximintegrated.com/en/ds/MAX1487E-MAX491E.pdf" H 6650 3650 50  0001 C CNN
 F 4 "SP485EEN-L/TR" H 6650 3600 50  0001 C CNN "Part Number"
 F 5 "MaxLinear" H 6650 3600 50  0001 C CNN "Manufacturer"
@@ -54,9 +54,10 @@ F 1 "10R" V 7200 3650 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric" V 7230 3500 50  0001 C CNN
 F 3 "https://www.rohm.com/datasheet/ESR01MZPF/esr-e" H 7300 3500 50  0001 C CNN
 F 4 "RES SMD 10 OHM 5% 0.4W 0805" V 7300 3500 50  0001 C CNN "Description"
-F 5 "Rohm" V 7300 3500 50  0001 C CNN "Supplier"
+F 5 "Digikey" V 7300 3500 50  0001 C CNN "Supplier"
 F 6 "ESR10EZPJ100" V 7300 3500 50  0001 C CNN "Part Number"
 F 7 "RHM10KCT-ND" V 7300 3500 50  0001 C CNN "Order Number"
+F 8 "Rohm" V 7300 3500 50  0001 C CNN "Manufacturer"
 	1    7300 3500
 	0    1    1    0   
 $EndComp
@@ -170,9 +171,9 @@ Wire Wire Line
 	8000 3500 8200 3500
 Connection ~ 8200 3500
 Connection ~ 8200 3800
-Text Label 5600 3700 0    50   ~ 0
+Text Label 4700 3700 0    50   ~ 0
 RS485_DRV_EN
-Text Label 5600 3600 0    50   ~ 0
+Text Label 4700 3600 0    50   ~ 0
 RS485_RCV_EN
 Wire Wire Line
 	8700 3500 8700 3700
@@ -260,14 +261,14 @@ Wire Wire Line
 Connection ~ 5350 3500
 Wire Wire Line
 	5350 3500 6250 3500
-Text Label 1300 3900 0    50   ~ 0
+Text Label 1300 3950 0    50   ~ 0
 UART_TX
-Text Label 1300 4000 0    50   ~ 0
+Text Label 1300 4050 0    50   ~ 0
 UART_RX
 Wire Wire Line
-	1300 3900 1700 3900
+	1300 3950 1700 3950
 Wire Wire Line
-	1300 4000 1700 4000
+	1300 4050 1700 4050
 Text Label 4700 3800 0    50   ~ 0
 UART_TX
 Text Label 4700 3500 0    50   ~ 0
@@ -337,11 +338,10 @@ Wire Wire Line
 Wire Wire Line
 	2800 4200 2800 4300
 NoConn ~ 2700 3400
-NoConn ~ 1700 4100
-NoConn ~ 1700 3500
-NoConn ~ 1700 3600
-NoConn ~ 1700 3700
-NoConn ~ 1700 3800
+NoConn ~ 1700 3550
+NoConn ~ 1700 3650
+NoConn ~ 1700 3750
+NoConn ~ 1700 3850
 NoConn ~ 2700 3500
 NoConn ~ 2700 3600
 NoConn ~ 2700 3700
@@ -351,19 +351,6 @@ Wire Wire Line
 	7050 2300 7050 2250
 Wire Wire Line
 	7050 2650 7050 2600
-$Comp
-L Device:CP1 C1
-U 1 1 5BB06B33
-P 7050 2450
-F 0 "C1" H 6800 2500 50  0000 L CNN
-F 1 "10uF 10V" H 6550 2400 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 7050 2450 50  0001 C CNN
-F 3 "~" H 7050 2450 50  0001 C CNN
-F 4 "CAP CER 10UF 10V X5R 0805" H 7050 2450 50  0001 C CNN "Description"
-F 5 "CL21A106KPCLQNC" H 7050 2450 50  0001 C CNN "Part Number"
-	1    7050 2450
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	7350 2300 7350 2250
 Wire Wire Line
@@ -410,6 +397,8 @@ F 2 "Resistor_SMD:R_0805_2012Metric" H 7388 2300 50  0001 C CNN
 F 3 "~" H 7350 2450 50  0001 C CNN
 F 4 "CAP CER 0.1UF 50V X7R 0805" H 7350 2450 50  0001 C CNN "Description"
 F 5 "GCM21BR71H104KA37K" H 7350 2450 50  0001 C CNN "Part Number"
+F 6 "490-8049-1-ND" H 7350 2450 50  0001 C CNN "Order Number"
+F 7 "Digikey" H 7350 2450 50  0001 C CNN "Supplier"
 	1    7350 2450
 	1    0    0    -1  
 $EndComp
@@ -458,21 +447,6 @@ F 7 "311-10.0KCRCT-ND" H 5350 4050 50  0001 C CNN "Order Number"
 F 8 "Digikey" H 5350 4050 50  0001 C CNN "Supplier"
 	1    5350 4050
 	1    0    0    1   
-$EndComp
-$Comp
-L Device:R R4
-U 1 1 5BB34898
-P 7300 3800
-F 0 "R4" V 7200 3750 50  0000 C CNN
-F 1 "10R" V 7200 3950 50  0000 C CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" V 7230 3800 50  0001 C CNN
-F 3 "https://www.rohm.com/datasheet/ESR01MZPF/esr-e" H 7300 3800 50  0001 C CNN
-F 4 "RES SMD 10 OHM 5% 0.4W 0805" V 7300 3800 50  0001 C CNN "Description"
-F 5 "Rohm" V 7300 3800 50  0001 C CNN "Supplier"
-F 6 "ESR10EZPJ100" V 7300 3800 50  0001 C CNN "Part Number"
-F 7 "RHM10KCT-ND" V 7300 3800 50  0001 C CNN "Order Number"
-	1    7300 3800
-	0    1    1    0   
 $EndComp
 $Bitmap
 Pos 9100 6850
@@ -1337,4 +1311,61 @@ F4 C8 B2 F7 AA 50 28 42 69 D9 35 10 72 66 DF 67 26 12 9E 82 DD 76 32 AD 12 56 A1
 44 AE 42 60 82 
 EndData
 $EndBitmap
+Wire Wire Line
+	5350 3600 4700 3600
+Connection ~ 5350 3600
+Wire Wire Line
+	5550 3700 4700 3700
+Connection ~ 5550 3700
+Wire Notes Line
+	1100 2900 1100 4650
+Wire Notes Line
+	1100 4650 3600 4650
+Wire Notes Line
+	3600 4650 3600 2900
+Wire Notes Line
+	3600 2900 1100 2900
+Wire Notes Line
+	4500 1950 4500 5050
+Wire Notes Line
+	4500 5050 9600 5050
+Wire Notes Line
+	9600 5050 9600 1950
+Wire Notes Line
+	9600 1950 4500 1950
+Text Notes 1900 4600 0    50   ~ 0
+To motherboard
+Text Notes 5550 4950 0    50   ~ 0
+DMX Output (RS485)
+$Comp
+L Device:R R4
+U 1 1 5BBED788
+P 7300 3800
+F 0 "R4" V 7200 3750 50  0000 C CNN
+F 1 "10R" V 7200 3950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 7230 3800 50  0001 C CNN
+F 3 "https://www.rohm.com/datasheet/ESR01MZPF/esr-e" H 7300 3800 50  0001 C CNN
+F 4 "RES SMD 10 OHM 5% 0.4W 0805" V 7300 3800 50  0001 C CNN "Description"
+F 5 "Digikey" V 7300 3800 50  0001 C CNN "Supplier"
+F 6 "ESR10EZPJ100" V 7300 3800 50  0001 C CNN "Part Number"
+F 7 "RHM10KCT-ND" V 7300 3800 50  0001 C CNN "Order Number"
+F 8 "Rohm" V 7300 3800 50  0001 C CNN "Manufacturer"
+	1    7300 3800
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:C C1
+U 1 1 5BBED9D4
+P 7050 2450
+F 0 "C1" H 6800 2500 50  0000 L CNN
+F 1 "10uF 10V" H 6550 2400 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" H 7088 2300 50  0001 C CNN
+F 3 "~" H 7050 2450 50  0001 C CNN
+F 4 "CAP CER 10UF 10V X5R 0805" H 7050 2450 50  0001 C CNN "Description"
+F 5 "CL21A106KPCLQNC" H 7050 2450 50  0001 C CNN "Part Number"
+F 6 "1276-2402-1-ND" H 7050 2450 50  0001 C CNN "Order Number"
+F 7 "Digikey" H 7050 2450 50  0001 C CNN "Supplier"
+	1    7050 2450
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
