@@ -35,8 +35,8 @@ U 1 1 5BB06A7D
 P 6650 3600
 F 0 "U1" H 6850 3000 50  0000 C CNN
 F 1 "SP485E" H 6950 2900 50  0000 C CNN
-F 2 "project_parts:SO-8_5.3x6.2mm_P1.27mm" H 6650 2900 50  0001 C CNN
-F 3 "https://datasheets.maximintegrated.com/en/ds/MAX1487E-MAX491E.pdf" H 6650 3650 50  0001 C CNN
+F 2 "project_parts:SOIC-8_3.9x4.9mm_P1.27mm" H 6650 2900 50  0001 C CNN
+F 3 "https://www.exar.com/ds/sp481e_sp485e.pdf" H 6650 3650 50  0001 C CNN
 F 4 "SP485EEN-L/TR" H 6650 3600 50  0001 C CNN "Part Number"
 F 5 "MaxLinear" H 6650 3600 50  0001 C CNN "Manufacturer"
 F 6 "IC TXRX RS485 HALF DUPLEX 8SOIC " H 6650 3600 50  0001 C CNN "Description"
