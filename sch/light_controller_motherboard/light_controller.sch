@@ -1919,7 +1919,7 @@ F 8 "Digikey" H 3200 2950 50  0001 C CNN "Supplier"
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:CP1_Small C6
+L Device:C_Small C6
 U 1 1 5BB98F68
 P 2900 2950
 F 0 "C6" H 2650 3000 50  0000 L CNN
