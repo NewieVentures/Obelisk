@@ -78,7 +78,7 @@ U 1 1 5BB06A9B
 P 7800 4400
 F 0 "D1" V 7750 4150 50  0000 L CNN
 F 1 "43V 600W" V 7850 3900 50  0000 L CNN
-F 2 "Diode_SMD:D_SMB" H 7800 4400 50  0001 C CNN
+F 2 "project_parts:D_SMB_NP" H 7800 4400 50  0001 C CNN
 F 3 "http://www.littelfuse.com/~/media/electronics/datasheets/tvs_diodes/littelfuse_tvs_diode_smbj_datasheet.pdf.pdf" H 7800 4400 50  0001 C CNN
 F 4 "TVS DIODE 43V 69.4V DO214AA" V 7800 4400 50  0001 C CNN "Description"
 F 5 "SMBJ43CA" V 7800 4400 50  0001 C CNN "Part Number"
@@ -408,7 +408,7 @@ U 1 1 5BB334EE
 P 8000 4400
 F 0 "D2" V 7950 4500 50  0000 L CNN
 F 1 "43V 600W" V 8050 4500 50  0000 L CNN
-F 2 "Diode_SMD:D_SMB" H 8000 4400 50  0001 C CNN
+F 2 "project_parts:D_SMB_NP" H 8000 4400 50  0001 C CNN
 F 3 "http://www.littelfuse.com/~/media/electronics/datasheets/tvs_diodes/littelfuse_tvs_diode_smbj_datasheet.pdf.pdf" H 8000 4400 50  0001 C CNN
 F 4 "TVS DIODE 43V 69.4V DO214AA" V 8000 4400 50  0001 C CNN "Description"
 F 5 "SMBJ43CA" V 8000 4400 50  0001 C CNN "Part Number"
