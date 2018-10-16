@@ -1,28 +1,11 @@
 EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
-# Connector:TestPoint
+# Connector_Generic_Conn_01x02
 #
-DEF Connector:TestPoint TP 0 30 N N 1 F N
-F0 "TP" 0 270 50 H V C CNN
-F1 "Connector:TestPoint" 0 200 50 H V C CNN
-F2 "" 200 0 50 H I C CNN
-F3 "" 200 0 50 H I C CNN
-$FPLIST
- Pin*
- Test*
-$ENDFPLIST
-DRAW
-C 0 130 30 0 1 0 N
-X 1 1 0 0 100 U 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
-# Connector_Generic:Conn_01x02
-#
-DEF Connector_Generic:Conn_01x02 J 0 40 Y N 1 F N
+DEF Connector_Generic_Conn_01x02 J 0 40 Y N 1 F N
 F0 "J" 0 100 50 H V C CNN
-F1 "Connector_Generic:Conn_01x02" 0 -200 50 H V C CNN
+F1 "Connector_Generic_Conn_01x02" 0 -200 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -37,11 +20,11 @@ X Pin_2 2 -200 -100 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Connector_Generic:Conn_01x03
+# Connector_Generic_Conn_01x03
 #
-DEF Connector_Generic:Conn_01x03 J 0 40 Y N 1 F N
+DEF Connector_Generic_Conn_01x03 J 0 40 Y N 1 F N
 F0 "J" 0 200 50 H V C CNN
-F1 "Connector_Generic:Conn_01x03" 0 -200 50 H V C CNN
+F1 "Connector_Generic_Conn_01x03" 0 -200 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -58,11 +41,28 @@ X Pin_3 3 -200 -100 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device:CP1_Small
+# Connector_TestPoint
 #
-DEF Device:CP1_Small C 0 10 N N 1 F N
+DEF Connector_TestPoint TP 0 30 N N 1 F N
+F0 "TP" 0 270 50 H V C CNN
+F1 "Connector_TestPoint" 0 200 50 H V C CNN
+F2 "" 200 0 50 H I C CNN
+F3 "" 200 0 50 H I C CNN
+$FPLIST
+ Pin*
+ Test*
+$ENDFPLIST
+DRAW
+C 0 130 30 0 1 0 N
+X 1 1 0 0 100 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# Device_CP1_Small
+#
+DEF Device_CP1_Small C 0 10 N N 1 F N
 F0 "C" 10 70 50 H V L CNN
-F1 "Device:CP1_Small" 10 -80 50 H V L CNN
+F1 "Device_CP1_Small" 10 -80 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -78,11 +78,11 @@ X ~ 2 0 -100 80 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device:C_Small
+# Device_C_Small
 #
-DEF Device:C_Small C 0 10 N N 1 F N
+DEF Device_C_Small C 0 10 N N 1 F N
 F0 "C" 10 70 50 H V L CNN
-F1 "Device:C_Small" 10 -80 50 H V L CNN
+F1 "Device_C_Small" 10 -80 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -96,11 +96,11 @@ X ~ 2 0 -100 80 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device:EMI_Filter_CommonMode
+# Device_EMI_Filter_CommonMode
 #
-DEF Device:EMI_Filter_CommonMode FL 0 10 Y N 1 F N
+DEF Device_EMI_Filter_CommonMode FL 0 10 Y N 1 F N
 F0 "FL" 0 175 50 H V C CNN
-F1 "Device:EMI_Filter_CommonMode" 0 -175 50 H V C CNN
+F1 "Device_EMI_Filter_CommonMode" 0 -175 50 H V C CNN
 F2 "" 0 40 50 V V C CNN
 F3 "" 0 40 50 V V C CNN
 ALIAS EMI_Filter_CommonMode
@@ -134,11 +134,11 @@ X 4 4 200 -100 100 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device:Fuse
+# Device_Fuse
 #
-DEF Device:Fuse F 0 0 N Y 1 F N
+DEF Device_Fuse F 0 0 N Y 1 F N
 F0 "F" 80 0 50 V V C CNN
-F1 "Device:Fuse" -75 0 50 V V C CNN
+F1 "Device_Fuse" -75 0 50 V V C CNN
 F2 "" -70 0 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -152,11 +152,11 @@ X ~ 2 0 -150 50 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device:L_Core_Ferrite_Small
+# Device_L_Core_Ferrite_Small
 #
-DEF Device:L_Core_Ferrite_Small L 0 10 N N 1 F N
+DEF Device_L_Core_Ferrite_Small L 0 10 N N 1 F N
 F0 "L" 50 40 50 H V L CNN
-F1 "Device:L_Core_Ferrite_Small" 50 -50 50 H V L CNN
+F1 "Device_L_Core_Ferrite_Small" 50 -50 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -191,11 +191,11 @@ X ~ 2 0 -100 20 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device:R
+# Device_R
 #
-DEF Device:R R 0 0 N Y 1 F N
+DEF Device_R R 0 0 N Y 1 F N
 F0 "R" 80 0 50 V V C CNN
-F1 "Device:R" 0 0 50 V V C CNN
+F1 "Device_R" 0 0 50 V V C CNN
 F2 "" -70 0 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -208,11 +208,11 @@ X ~ 2 0 -150 50 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device:Varistor
+# Device_Varistor
 #
-DEF Device:Varistor RV 0 0 N Y 1 F N
+DEF Device_Varistor RV 0 0 N Y 1 F N
 F0 "RV" 125 0 50 V V C CNN
-F1 "Device:Varistor" -125 0 50 V V C CNN
+F1 "Device_Varistor" -125 0 50 V V C CNN
 F2 "" -70 0 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -228,11 +228,11 @@ X ~ 2 0 -150 50 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Diode:1.5KExxA
+# Diode_1.5KExxA
 #
-DEF Diode:1.5KExxA D 0 40 N N 1 F N
+DEF Diode_1.5KExxA D 0 40 N N 1 F N
 F0 "D" 0 100 50 H V C CNN
-F1 "Diode:1.5KExxA" 0 -100 50 H V C CNN
+F1 "Diode_1.5KExxA" 0 -100 50 H V C CNN
 F2 "Diode_THT:D_DO-201AE_P15.24mm_Horizontal" 0 -200 50 H I C CNN
 F3 "" -50 0 50 H I C CNN
 ALIAS 1N62xxA 1N630xA
@@ -247,11 +247,11 @@ X A2 2 150 0 100 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Mechanical:MountingHole
+# Mechanical_MountingHole
 #
-DEF Mechanical:MountingHole MH 0 40 Y Y 1 F N
+DEF Mechanical_MountingHole MH 0 40 Y Y 1 F N
 F0 "MH" 0 200 50 H V C CNN
-F1 "Mechanical:MountingHole" 0 125 50 H V C CNN
+F1 "Mechanical_MountingHole" 0 125 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -262,11 +262,11 @@ C 0 0 50 0 1 50 N
 ENDDRAW
 ENDDEF
 #
-# light_controller:LHE15-20Dxx
+# light_controller_LHE15-20Dxx
 #
-DEF light_controller:LHE15-20Dxx PS 0 40 Y Y 1 F N
+DEF light_controller_LHE15-20Dxx PS 0 40 Y Y 1 F N
 F0 "PS" -250 650 50 H V C CNN
-F1 "light_controller:LHE15-20Dxx" -50 550 50 H V C CNN
+F1 "light_controller_LHE15-20Dxx" -50 550 50 H V C CNN
 F2 "" 50 -350 50 H I C CNN
 F3 "" 50 -350 50 H I C CNN
 DRAW
@@ -292,11 +292,11 @@ X -Vo1 8 400 100 100 L 50 50 1 1 w
 ENDDRAW
 ENDDEF
 #
-# light_controller:PARTICLE_ELECTRON
+# light_controller_PARTICLE_ELECTRON
 #
-DEF light_controller:PARTICLE_ELECTRON U 0 40 Y Y 1 F N
+DEF light_controller_PARTICLE_ELECTRON U 0 40 Y Y 1 F N
 F0 "U" 0 1300 60 H V C CNN
-F1 "light_controller:PARTICLE_ELECTRON" 0 -1150 60 H V C CNN
+F1 "light_controller_PARTICLE_ELECTRON" 0 -1150 60 H V C CNN
 F2 "" -1050 550 60 H V C CNN
 F3 "" -1050 550 60 H V C CNN
 DRAW
@@ -340,11 +340,11 @@ X A3/ADC5/SPI_SCK/DAC2/PA5 9 -1850 -250 300 R 50 50 1 1 B
 ENDDRAW
 ENDDEF
 #
-# light_controller:module_connector
+# light_controller_module_connector
 #
-DEF light_controller:module_connector J 0 40 Y Y 1 F N
+DEF light_controller_module_connector J 0 40 Y Y 1 F N
 F0 "J" -100 650 50 H V C CNN
-F1 "light_controller:module_connector" -100 550 50 H V C CNN
+F1 "light_controller_module_connector" -100 550 50 H V C CNN
 F2 "" -350 50 50 H I C CNN
 F3 "" -350 50 50 H I C CNN
 DRAW
@@ -369,11 +369,11 @@ X GND 9 -600 -400 100 R 50 50 1 1 W
 ENDDRAW
 ENDDEF
 #
-# power:+3V3
+# power_+3V3
 #
-DEF power:+3V3 #PWR 0 0 Y Y 1 F P
+DEF power_+3V3 #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -150 50 H I C CNN
-F1 "power:+3V3" 0 140 50 H V C CNN
+F1 "power_+3V3" 0 140 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 ALIAS +3.3V
@@ -385,11 +385,11 @@ X +3V3 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# power:+5V
+# power_+5V
 #
-DEF power:+5V #PWR 0 0 Y Y 1 F P
+DEF power_+5V #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -150 50 H I C CNN
-F1 "power:+5V" 0 140 50 H V C CNN
+F1 "power_+5V" 0 140 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -400,11 +400,11 @@ X +5V 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# power:Earth
+# power_Earth
 #
-DEF ~power:Earth #PWR 0 0 Y Y 1 F P
+DEF ~power_Earth #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -250 50 H I C CNN
-F1 "power:Earth" 0 -150 50 H I C CNN
+F1 "power_Earth" 0 -150 50 H I C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -416,11 +416,11 @@ X Earth 1 0 0 0 D 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# power:GND
+# power_GND
 #
-DEF power:GND #PWR 0 0 Y Y 1 F P
+DEF power_GND #PWR 0 0 Y Y 1 F P
 F0 "#PWR" 0 -250 50 H I C CNN
-F1 "power:GND" 0 -150 50 H V C CNN
+F1 "power_GND" 0 -150 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW

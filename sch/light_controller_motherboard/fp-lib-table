@@ -1,4 +1,4 @@
 (fp_lib_table
   (lib (name light_controller)(type KiCad)(uri ${KIPRJMOD}/light_controller.pretty)(options "")(descr "")(disabled))
-  (lib (name project_parts)(type KiCad)(uri /home/mitchell/workspace/skate_park_obelisk/sch/project_parts.pretty)(options "")(descr ""))
+  (lib (name project_parts)(type KiCad)(uri ${KIPRJMOD}/../project_parts.pretty)(options "")(descr ""))
 )
