@@ -1980,7 +1980,7 @@ U 1 1 5BBBD145
 P 3950 1200
 F 0 "L2" H 3950 1400 50  0000 C CNN
 F 1 "10mH 2A" H 3950 1000 50  0000 C CNN
-F 2 "Inductor_THT:Choke_Schaffner_RN143-04-33.1x32.5mm" H 3950 1240 50  0001 C CNN
+F 2 "project_parts:Choke_Schaffner_RN143-02-33.1x32.5mm" H 3950 1240 50  0001 C CNN
 F 3 "~" V 3950 1240 50  0000 C CNN
 F 4 "RN143-2-02-10M" H 3950 1200 50  0001 C CNN "Part Number"
 F 5 "Schaffner" H 3950 1200 50  0001 C CNN "Manufacturer"
@@ -2270,7 +2270,7 @@ U 1 1 5BC48663
 P 1250 2700
 F 0 "TP34" V 1250 2900 50  0001 L CNN
 F 1 "GND" V 1250 2900 50  0000 L CNN
-F 2 "project_parts:Test_Point_Alligator_Clip" H 1450 2700 50  0001 C CNN
+F 2 "TestPoint:TestPoint_THTPad_4.0x4.0mm_Drill2.0mm" H 1450 2700 50  0001 C CNN
 F 3 "~" H 1450 2700 50  0001 C CNN
 	1    1250 2700
 	0    1    -1   0   
