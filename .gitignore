@@ -2,3 +2,6 @@ output
 tests
 src/**/*.bin
 src/**/*.o
+*.bck
+*.bak
+*.kicad_pcb-bak
