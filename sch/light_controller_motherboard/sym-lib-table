@@ -1,3 +1,0 @@
-(sym_lib_table
-  (lib (name light_controller)(type Legacy)(uri ${KIPRJMOD}/../light_controller.lib)(options "")(descr ""))
-)

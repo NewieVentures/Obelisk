@@ -11,9 +11,9 @@
 
   (page A4)
   (title_block
-    (title "Light Controller - DMX Module")
-    (date 2018-10-04)
-    (rev 0.1)
+    (title "Faraday FP2")
+    (date 2018-10-18)
+    (rev A)
     (company "Newie Ventures")
   )
 
@@ -287,7 +287,7 @@
     )
   )
 
-  (module project_parts:Light_controller_module (layer F.Cu) (tedit 5BBC427E) (tstamp 5BBD49E7)
+  (module project_parts:Faraday_module (layer F.Cu) (tedit 5BBC427E) (tstamp 5BBD49E7)
     (at 145 100)
     (path /5BAE257F)
     (fp_text reference J2 (at -12.44 12.56) (layer F.SilkS)

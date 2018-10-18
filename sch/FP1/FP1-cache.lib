@@ -262,11 +262,11 @@ C 0 0 50 0 1 50 N
 ENDDRAW
 ENDDEF
 #
-# light_controller_LHE15-20Dxx
+# faraday_LHE15-20Dxx
 #
-DEF light_controller_LHE15-20Dxx PS 0 40 Y Y 1 F N
+DEF faraday_LHE15-20Dxx PS 0 40 Y Y 1 F N
 F0 "PS" -250 650 50 H V C CNN
-F1 "light_controller_LHE15-20Dxx" -50 550 50 H V C CNN
+F1 "faraday_LHE15-20Dxx" -50 550 50 H V C CNN
 F2 "" 50 -350 50 H I C CNN
 F3 "" 50 -350 50 H I C CNN
 DRAW
@@ -292,11 +292,11 @@ X -Vo1 8 400 100 100 L 50 50 1 1 w
 ENDDRAW
 ENDDEF
 #
-# light_controller_PARTICLE_ELECTRON
+# faraday_PARTICLE_ELECTRON
 #
-DEF light_controller_PARTICLE_ELECTRON U 0 40 Y Y 1 F N
+DEF faraday_PARTICLE_ELECTRON U 0 40 Y Y 1 F N
 F0 "U" 0 1300 60 H V C CNN
-F1 "light_controller_PARTICLE_ELECTRON" 0 -1150 60 H V C CNN
+F1 "faraday_PARTICLE_ELECTRON" 0 -1150 60 H V C CNN
 F2 "" -1050 550 60 H V C CNN
 F3 "" -1050 550 60 H V C CNN
 DRAW
@@ -340,11 +340,11 @@ X A3/ADC5/SPI_SCK/DAC2/PA5 9 -1850 -250 300 R 50 50 1 1 B
 ENDDRAW
 ENDDEF
 #
-# light_controller_module_connector
+# faraday_module_connector
 #
-DEF light_controller_module_connector J 0 40 Y Y 1 F N
+DEF faraday_module_connector J 0 40 Y Y 1 F N
 F0 "J" -100 650 50 H V C CNN
-F1 "light_controller_module_connector" -100 550 50 H V C CNN
+F1 "faraday_module_connector" -100 550 50 H V C CNN
 F2 "" -350 50 50 H I C CNN
 F3 "" -350 50 50 H I C CNN
 DRAW

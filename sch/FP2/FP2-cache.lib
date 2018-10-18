@@ -120,11 +120,11 @@ X VCC 8 0 500 100 D 50 50 1 1 W
 ENDDRAW
 ENDDEF
 #
-# light_controller_module_connector
+# faraday_module_connector
 #
-DEF light_controller_module_connector J 0 40 Y Y 1 F N
+DEF faraday_module_connector J 0 40 Y Y 1 F N
 F0 "J" -100 650 50 H V C CNN
-F1 "light_controller_module_connector" -100 550 50 H V C CNN
+F1 "faraday_module_connector" -100 550 50 H V C CNN
 F2 "" -350 50 50 H I C CNN
 F3 "" -350 50 50 H I C CNN
 DRAW
