@@ -1192,19 +1192,19 @@ Wire Wire Line
 Wire Wire Line
 	5850 5550 7650 5550
 $Comp
-L faraday:module_connector J2
+L faraday:module_connector_socket J2
 U 1 1 5BAF6DBF
-P 10050 3500
-F 0 "J2" H 9950 4165 50  0000 C CNN
-F 1 "Module 0" H 9950 4074 50  0000 C CNN
-F 2 "project_parts:Faraday_module" H 9700 3550 50  0001 C CNN
-F 3 "" H 9700 3550 50  0001 C CNN
-F 4 "CONN HEADER FEMALE 9POS .1\" GOLD" H 10050 3500 50  0001 C CNN "Description"
-F 5 "PPPC091LFBN-RC" H 10050 3500 50  0001 C CNN "Part Number"
-F 6 "S7042-ND" H 10050 3500 50  0001 C CNN "Order Number"
-F 7 "Digikey" H 10050 3500 50  0001 C CNN "Supplier"
-F 8 "Sullins Connector Solutions" H 10050 3500 50  0001 C CNN "Manufacturer"
-	1    10050 3500
+P 9950 3500
+F 0 "J2" H 9850 4165 50  0000 C CNN
+F 1 "Module 0" H 9850 4074 50  0000 C CNN
+F 2 "project_parts:Faraday_module" H 9600 3550 50  0001 C CNN
+F 3 "" H 9600 3550 50  0001 C CNN
+F 4 "CONN HEADER FEMALE 9POS .1\" GOLD" H 9950 3500 50  0001 C CNN "Description"
+F 5 "PPPC091LFBN-RC" H 9950 3500 50  0001 C CNN "Part Number"
+F 6 "S7042-ND" H 9950 3500 50  0001 C CNN "Order Number"
+F 7 "Digikey" H 9950 3500 50  0001 C CNN "Supplier"
+F 8 "Sullins Connector Solutions" H 9950 3500 50  0001 C CNN "Manufacturer"
+	1    9950 3500
 	1    0    0    -1  
 $EndComp
 Text Label 8900 3350 0    50   ~ 0
@@ -2308,19 +2308,19 @@ Connection ~ 4350 1450
 Wire Wire Line
 	4350 1450 5000 1450
 $Comp
-L faraday:module_connector J4
+L faraday:module_connector_socket J4
 U 1 1 5BBF779F
-P 10050 5200
-F 0 "J4" H 9950 5865 50  0000 C CNN
-F 1 "Module 1" H 9950 5774 50  0000 C CNN
-F 2 "project_parts:Faraday_module" H 9700 5250 50  0001 C CNN
-F 3 "" H 9700 5250 50  0001 C CNN
-F 4 "CONN HEADER FEMALE 9POS .1\" GOLD" H 10050 5200 50  0001 C CNN "Description"
-F 5 "PPPC091LFBN-RC" H 10050 5200 50  0001 C CNN "Part Number"
-F 6 "S7042-ND" H 10050 5200 50  0001 C CNN "Order Number"
-F 7 "Digikey" H 10050 5200 50  0001 C CNN "Supplier"
-F 8 "Sullins Connector Solutions" H 10050 5200 50  0001 C CNN "Manufacturer"
-	1    10050 5200
+P 9950 5200
+F 0 "J4" H 9850 5865 50  0000 C CNN
+F 1 "Module 1" H 9850 5774 50  0000 C CNN
+F 2 "project_parts:Faraday_module" H 9600 5250 50  0001 C CNN
+F 3 "" H 9600 5250 50  0001 C CNN
+F 4 "CONN HEADER FEMALE 9POS .1\" GOLD" H 9950 5200 50  0001 C CNN "Description"
+F 5 "PPPC091LFBN-RC" H 9950 5200 50  0001 C CNN "Part Number"
+F 6 "S7042-ND" H 9950 5200 50  0001 C CNN "Order Number"
+F 7 "Digikey" H 9950 5200 50  0001 C CNN "Supplier"
+F 8 "Sullins Connector Solutions" H 9950 5200 50  0001 C CNN "Manufacturer"
+	1    9950 5200
 	1    0    0    -1  
 $EndComp
 Wire Notes Line
