@@ -1,7 +1,7 @@
 #include "ledStripDriver.h"
 #include "colour.h"
 
-const Colour COLOUR_DEFAULT = Colour(255, 255, 255);
+const Colour COLOUR_DEFAULT = Colour(50, 50, 50);
 
 LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mConfig = config;
@@ -22,9 +22,19 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
 
 void LedStripDriver::onTimerFired(led_strip_state_t *state) {
     uint8_t values[3];
-    values[0] = mColourOn->getRed();
-    values[1] = mColourOn->getGreen();
-    values[2] = mColourOn->getBlue();
+
+    uint32_t onTimeMs = (mPeriodMs * mPulseDutyCycle) / 100;
+
+    if (state->counter < onTimeMs) {
+      values[0] = mColourOn->getRed();
+      values[1] = mColourOn->getGreen();
+      values[2] = mColourOn->getBlue();
+    } else {
+      values[0] = mColourOff->getRed();
+      values[1] = mColourOff->getGreen();
+      values[2] = mColourOff->getBlue();
+    }
+
     mConfig->write_value_fn(values, 3);
 };
 
