@@ -19,10 +19,6 @@ SRC := $(shell find $(APP_DIR) -type f -iname '*.cpp' ! -iname ".*")
 TEST_SRC := $(addprefix $(APP_DIR)/,$(TEST_SRC))
 TEST_SRC += $(shell find $(TEST_DIR) -type f -iname '*.cpp')
 
-LIBS := $(patsubst %,-l%,$(LIB))
-LIB_PATHS := $(patsubst %,-L%,$(LIB_DIRS))
-LIB_PATHS += -L$(LDSCRIPT_INC)
-
 TEST_LIBS := $(patsubst %,-l%,$(TEST_LIB))
 TEST_LIB_PATHS := $(patsubst %,-L%,$(TEST_LIB_DIRS))
 
