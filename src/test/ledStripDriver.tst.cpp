@@ -31,19 +31,10 @@ static const led_strip_config_t CONFIG_LEDS_1 = {
     .resolution_ms = 1,
 };
 
-// static void verify_colour(const Colour *expected, uint8_t *values) {
-//     const Colour expectedColour = Colour(expected->getRed(), expected->getGreen(), expected->getBlue());
-//     const Colour actualColour = Colour(values[0], values[1], values[2]);
-//     // const Colour& actual = actualColour;
-
-//     const Colour& c1 = expectedColour;
-//     const Colour& c2 = actualColour;
-
-//     CHECK_EQUAL(c1, c2);
-//     // BYTES_EQUAL((uint8_t)expected->getRed(), actual[0]);
-//     // BYTES_EQUAL((uint8_t)expected->getGreen(), actual[1]);
-//     // BYTES_EQUAL((uint8_t)expected->getBlue(), actual[2]);
-// }
+static void verify_colour(const Colour *expected, uint8_t *values) {
+    const Colour actualColour = Colour(values[0], values[1], values[2]);
+    CHECK_EQUAL(*expected, actualColour);
+}
 
 TEST_GROUP(LedStripDriverTestGroup)
 {
@@ -61,7 +52,7 @@ TEST_GROUP(LedStripDriverTestGroup)
         delete[] lastValuesWritten;
     }
 };
-/*
+
 TEST(LedStripDriverTestGroup, writesOnValueForPulseWhenCounterLessThanOnTime)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
@@ -93,4 +84,3 @@ TEST(LedStripDriverTestGroup, writesOffValueForPulseWhenCounterGreaterThanOnTime
 
     verify_colour(&COLOUR_OFF, lastValuesWritten);
 }
-*/

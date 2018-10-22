@@ -41,29 +41,16 @@ uint8_t Colour::getBlue() const {
     return mBlue;
 }
 
-bool Colour::operator==(const Colour& c)
+bool operator==(const Colour& lhs, const Colour& rhs)
 {
     return (
-       mRed == c.getRed() &&
-       mGreen == c.getGreen() &&
-       mBlue == c.getBlue()
+       lhs.getRed() == rhs.getRed() &&
+       lhs.getGreen() == rhs.getGreen() &&
+       lhs.getBlue() == rhs.getBlue()
     );
 }
 
-bool Colour::operator!=(const Colour& c)
+bool operator!=(const Colour& lhs, const Colour& rhs)
 {
-    return (
-       mRed != c.getRed() ||
-       mGreen != c.getGreen() ||
-       mBlue != c.getBlue()
-    );
-}
-
-bool Colour::operator!=(const Colour *c)
-{
-    return (
-       mRed != c->getRed() ||
-       mGreen != c->getGreen() ||
-       mBlue != c->getBlue()
-    );
+  return !(lhs == rhs);
 }

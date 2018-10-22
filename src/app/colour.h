@@ -14,9 +14,9 @@ public:
   uint8_t getRed() const;
   uint8_t getGreen() const;
   uint8_t getBlue() const;
-  bool operator==(const Colour& c);
-  bool operator!=(const Colour *c);
-  bool operator!=(const Colour& c);
 };
+
+bool operator==(const Colour& lhs, const Colour& rhs);
+bool operator!=(const Colour& lhs, const Colour& rhs);
 
 #endif
