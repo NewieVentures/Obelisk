@@ -128,6 +128,23 @@ void LedStripDriver::handleStrobePattern(led_strip_state_t *state, uint8_t *valu
   writeColourValues(values, mConfig->numLeds, colour);
 }
 
+void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *values) {
+  uint32_t ledsOn = mProgressInitial + state->progress;
+  uint32_t ledsOff = mConfig->numLeds - ledsOn;
+
+  if (state->counter >= mProgressDelayMs) {
+    state->progress += 1;
+    state->counter = 0;
+  }
+
+  if (state->progress >= mConfig->numLeds) {
+    state->progress = 0;
+  }
+
+  writeColourValues(values, ledsOn, mColourOn);
+  writeColourValues(&values[ledsOn * COLOURS_PER_LED], ledsOff, mColourOff);
+}
+
 void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
   const uint32_t numLedValues = COLOURS_PER_LED * mConfig->numLeds;
 
@@ -146,6 +163,10 @@ void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
 
     case strobe:
       handleStrobePattern(state, values);
+      break;
+
+    case progress:
+      handleProgressPattern(state, values);
       break;
 
     default:
