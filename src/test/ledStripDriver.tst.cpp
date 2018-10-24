@@ -423,3 +423,39 @@ TEST(LedStripDriverBlinkTestGroup, resetsCounterAfterPeriod)
 
     LONGS_EQUAL(1, state.counter);
 }
+
+/***********************************************************************************************
+ * Colour pattern
+ **********************************************************************************************/
+TEST_GROUP(LedStripDriverColourTestGroup)
+{
+    void setup() {
+        const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+
+        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+        lastValuesWritten = new uint8_t[valuesLength];
+        memset(lastValuesWritten, 0, valuesLength);
+        memset(values, 0, valuesLength);
+    }
+
+    void teardown() {
+        delete driver;
+        delete[] lastValuesWritten;
+    }
+};
+
+TEST(LedStripDriverBlinkTestGroup, writesValueForAllLedsWithCorrectColour)
+{
+    const Colour& COLOUR = COLOUR_RED;
+
+    driver->pattern(Pattern::colour)
+          ->colourOn((Colour*)&COLOUR);
+
+    led_strip_state_t state = {
+      .counter = 0,
+    };
+
+    driver->onTimerFired(&state, values);
+
+    verify_colours(&COLOUR, lastValuesWritten, 3);
+}

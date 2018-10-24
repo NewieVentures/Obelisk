@@ -10,5 +10,6 @@
 #define COLOUR_DARK_GREY Colour(50, 50, 50)
 #define COLOUR_GOLDENROD_1 Colour(0xFF, 0xC1, 0x25)
 #define COLOUR_DODGER_BLUE Colour(0x1E, 0x90, 0xFF)
+#define COLOUR_DARK_GREEN Colour(0x00, 0x64, 0x00)
 
 #endif

@@ -107,6 +107,10 @@ void LedStripDriver::handleBlinkPattern(led_strip_state_t *state, uint8_t *value
   writeColourValues(values, mConfig->numLeds, colour);
 }
 
+void LedStripDriver::handleColourPattern(led_strip_state_t *state, uint8_t *values) {
+  writeColourValues(values, mConfig->numLeds, mColourOn);
+}
+
 void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
   const uint32_t numLedValues = COLOURS_PER_LED * mConfig->numLeds;
 
@@ -117,6 +121,10 @@ void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
 
     case pulse:
       handlePulsePattern(state, values);
+      break;
+
+    case colour:
+      handleColourPattern(state, values);
       break;
 
     default:
