@@ -4,6 +4,8 @@
 const Colour COLOUR_DEFAULT = Colour(50, 0, 0);
 const Colour COLOUR_BLACK = Colour(0, 0, 0);
 
+#define COLOURS_PER_LED 3
+#define PWM_DUTY_STEPS 10
 #define DUTY_DIR_INC 1
 #define DUTY_DIR_DEC -1
 #define DUTY_MAX 99
@@ -22,7 +24,7 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mColourOff = (Colour*)&COLOUR_BLACK;
   mPattern = colour;
 
-  mPulseDutyCycle = 50;
+  mDutyCycle = 50;
 
   mSnakeDirection = Direction::forward;
   mSnakeLength = 3;
@@ -57,14 +59,12 @@ void updateDutyCycle(led_strip_state_t *state, double increment, double decremen
   }
 }
 
-void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
-  const uint32_t numLedValues = 3*mConfig->numLeds;
-
-  uint32_t pwmPeriod = mConfig->resolutionMs * 10;
+void LedStripDriver::handlePulsePattern(led_strip_state_t *state, uint8_t *values) {
+  uint32_t pwmPeriod = mConfig->resolutionMs * PWM_DUTY_STEPS;
   uint32_t onTimeMs = (uint32_t)((pwmPeriod * state->dutyCycle) / 100);
 
-  double dutyIncrement = calcDutyCycleIncrement(mPulseDutyCycle, mPeriodMs, pwmPeriod);
-  double dutyDecrement = calcDutyCycleIncrement((100 - mPulseDutyCycle), mPeriodMs, pwmPeriod);
+  double dutyIncrement = calcDutyCycleIncrement(mDutyCycle, mPeriodMs, pwmPeriod);
+  double dutyDecrement = calcDutyCycleIncrement((100 - mDutyCycle), mPeriodMs, pwmPeriod);
 
   Colour *colour;
 
@@ -88,6 +88,41 @@ void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
   }
 
   writeColourValues(values, mConfig->numLeds, colour);
+}
+
+void LedStripDriver::handleBlinkPattern(led_strip_state_t *state, uint8_t *values) {
+  uint32_t onTimeMs = (uint32_t)((mPeriodMs * mDutyCycle) / 100);
+  Colour *colour;
+
+  if (state->counter >= mPeriodMs) {
+    state->counter = 0;
+  }
+
+  if (state->counter < onTimeMs) {
+    colour = mColourOn;
+  } else {
+    colour = mColourOff;
+  }
+
+  writeColourValues(values, mConfig->numLeds, colour);
+}
+
+void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
+  const uint32_t numLedValues = COLOURS_PER_LED * mConfig->numLeds;
+
+  switch(mPattern) {
+    case blink:
+      handleBlinkPattern(state, values);
+      break;
+
+    case pulse:
+      handlePulsePattern(state, values);
+      break;
+
+    default:
+      break;
+  }
+
   mConfig->writeValueFn(values, numLedValues);
 
   state->counter += mConfig->resolutionMs;
@@ -99,7 +134,7 @@ LedStripDriver* LedStripDriver::period(uint32_t valueMs) {
 }
 
 LedStripDriver* LedStripDriver::dutyCycle(uint8_t value) {
-  mPulseDutyCycle = value;
+  mDutyCycle = value;
   return this;
 };
 

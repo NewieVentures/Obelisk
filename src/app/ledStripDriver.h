@@ -34,13 +34,16 @@ class LedStripDriver {
 private:
   led_strip_config_t* mConfig;
 
+  void handleBlinkPattern(led_strip_state_t *state, uint8_t *values);
+  void handlePulsePattern(led_strip_state_t *state, uint8_t *values);
+
 protected:
   uint32_t mPeriodMs;
   Colour *mColourOn;
   Colour *mColourOff;
   Pattern mPattern;
 
-  uint8_t mPulseDutyCycle;
+  uint8_t mDutyCycle;
 
   Direction mSnakeDirection;
   uint32_t mSnakeLength;

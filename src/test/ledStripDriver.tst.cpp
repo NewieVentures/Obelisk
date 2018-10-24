@@ -6,12 +6,6 @@
 #include "colour.h"
 #include "ledStripDriver.h"
 
-// class LedStripDriverSpy : public LedStripDriver {
-//     public:
-//     LedStripDriverSpy(led_strip_config_t *config) : LedStripDriver(config) {
-//     };
-// };
-
 #define MAX_LEDS 10
 
 static const Colour COLOUR_RED(255, 0, 0);
@@ -51,12 +45,16 @@ static void verify_colour(const Colour *expected, uint8_t *values) {
   verify_colours(expected, values, 1);
 }
 
-TEST_GROUP(LedStripDriverTestGroup)
+/***********************************************************************************************
+ * Common code
+ **********************************************************************************************/
+
+TEST_GROUP(LedStripDriverCommonTestGroup)
 {
     void setup() {
         const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
 
-        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_1);
+        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
         lastValuesWritten = new uint8_t[valuesLength];
         memset(lastValuesWritten, 0, valuesLength);
         memset(values, 0, valuesLength);
@@ -68,7 +66,37 @@ TEST_GROUP(LedStripDriverTestGroup)
     }
 };
 
-TEST(LedStripDriverTestGroup, writesOnValueForPulseWhenCounterLessThanOnTime)
+TEST(LedStripDriverCommonTestGroup, counterIncrementsByResolution)
+{
+    led_strip_state_t state = { .counter = 0 };
+
+    driver->onTimerFired(&state, values);
+
+    LONGS_EQUAL(CONFIG_LEDS_3.resolutionMs, state.counter);
+}
+
+/***********************************************************************************************
+ * Pulse pattern
+ **********************************************************************************************/
+
+TEST_GROUP(LedStripDriverPulseTestGroup)
+{
+    void setup() {
+        const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+
+        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+        lastValuesWritten = new uint8_t[valuesLength];
+        memset(lastValuesWritten, 0, valuesLength);
+        memset(values, 0, valuesLength);
+    }
+
+    void teardown() {
+        delete driver;
+        delete[] lastValuesWritten;
+    }
+};
+
+TEST(LedStripDriverPulseTestGroup, writesOnValueForPulseWhenCounterLessThanOnTime)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
 
@@ -87,7 +115,7 @@ TEST(LedStripDriverTestGroup, writesOnValueForPulseWhenCounterLessThanOnTime)
     verify_colour(&COLOUR_ON, lastValuesWritten);
 }
 
-TEST(LedStripDriverTestGroup, writesOffValueForPulseWhenCounterGreaterThanOnTime)
+TEST(LedStripDriverPulseTestGroup, writesOffValueForPulseWhenCounterGreaterThanOnTime)
 {
     const Colour& COLOUR_OFF = COLOUR_GREEN;
 
@@ -103,7 +131,7 @@ TEST(LedStripDriverTestGroup, writesOffValueForPulseWhenCounterGreaterThanOnTime
     verify_colour(&COLOUR_OFF, lastValuesWritten);
 }
 
-TEST(LedStripDriverTestGroup, resetsCounterWhenEqualToPeriod)
+TEST(LedStripDriverPulseTestGroup, resetsCounterWhenEqualToPeriod)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 10;
@@ -120,7 +148,7 @@ TEST(LedStripDriverTestGroup, resetsCounterWhenEqualToPeriod)
     CHECK(state.counter < PERIOD_MS);
 }
 
-TEST(LedStripDriverTestGroup, writesOnValueForPulseWhenCounterEqualToPeriod)
+TEST(LedStripDriverPulseTestGroup, writesOnValueForPulseWhenCounterEqualToPeriod)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 10;
@@ -141,28 +169,7 @@ TEST(LedStripDriverTestGroup, writesOnValueForPulseWhenCounterEqualToPeriod)
     verify_colour(&COLOUR_ON, lastValuesWritten);
 }
 
-TEST(LedStripDriverTestGroup, counterIncrementsByResolution)
-{
-    const Colour& COLOUR_ON = COLOUR_RED;
-    const uint32_t PERIOD_MS = 10;
-
-    driver->pattern(Pattern::pulse)
-          ->period(PERIOD_MS)
-          ->dutyCycle(50)
-          ->colourOn((Colour*)&COLOUR_ON)
-          ->colourOff((Colour*)&COLOUR_GREEN);
-
-    led_strip_state_t state = {
-      .counter = 0,
-      .dutyCycle = 50,
-    };
-
-    driver->onTimerFired(&state, values);
-
-    LONGS_EQUAL(CONFIG_LEDS_1.resolutionMs, state.counter);
-}
-
-TEST(LedStripDriverTestGroup, dutyCycleIncrementsByCorrectAmountAfterPeriod)
+TEST(LedStripDriverPulseTestGroup, dutyCycleIncrementsByCorrectAmountAfterPeriod)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 100;
@@ -184,7 +191,7 @@ TEST(LedStripDriverTestGroup, dutyCycleIncrementsByCorrectAmountAfterPeriod)
     DOUBLES_EQUAL(51, state.dutyCycle, 0.01);
 }
 
-TEST(LedStripDriverTestGroup, dutyCycleCappedAt99)
+TEST(LedStripDriverPulseTestGroup, dutyCycleCappedAt99)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 100;
@@ -206,7 +213,7 @@ TEST(LedStripDriverTestGroup, dutyCycleCappedAt99)
     DOUBLES_EQUAL(99, state.dutyCycle, 0.01);
 }
 
-TEST(LedStripDriverTestGroup, dutyCycleDirectionReversesAfterReachingMaximum)
+TEST(LedStripDriverPulseTestGroup, dutyCycleDirectionReversesAfterReachingMaximum)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 100;
@@ -228,7 +235,7 @@ TEST(LedStripDriverTestGroup, dutyCycleDirectionReversesAfterReachingMaximum)
     CHECK_EQUAL(-1, state.dutyDirection);
 }
 
-TEST(LedStripDriverTestGroup, dutyCycleDecrementsByCorrectAmountAfterPeriod)
+TEST(LedStripDriverPulseTestGroup, dutyCycleDecrementsByCorrectAmountAfterPeriod)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 100;
@@ -250,7 +257,7 @@ TEST(LedStripDriverTestGroup, dutyCycleDecrementsByCorrectAmountAfterPeriod)
     DOUBLES_EQUAL(86.5, state.dutyCycle, 0.01);
 }
 
-TEST(LedStripDriverTestGroup, dutyCycleMinLimitOf1)
+TEST(LedStripDriverPulseTestGroup, dutyCycleMinLimitOf1)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 100;
@@ -272,7 +279,7 @@ TEST(LedStripDriverTestGroup, dutyCycleMinLimitOf1)
     DOUBLES_EQUAL(1, state.dutyCycle, 0.01);
 }
 
-TEST(LedStripDriverTestGroup, dutyCycleDirectionReversesAfterReachingMinimum)
+TEST(LedStripDriverPulseTestGroup, dutyCycleDirectionReversesAfterReachingMinimum)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
     const uint32_t PERIOD_MS = 100;
@@ -294,7 +301,7 @@ TEST(LedStripDriverTestGroup, dutyCycleDirectionReversesAfterReachingMinimum)
     CHECK_EQUAL(1, state.dutyDirection);
 }
 
-TEST(LedStripDriverTestGroup, writesOnValueForAllLeds)
+TEST(LedStripDriverPulseTestGroup, writesOnValueForAllLeds)
 {
     const Colour& COLOUR_ON = COLOUR_RED;
 
@@ -317,7 +324,7 @@ TEST(LedStripDriverTestGroup, writesOnValueForAllLeds)
     verify_colours(&COLOUR_ON, lastValuesWritten, 3);
 }
 
-TEST(LedStripDriverTestGroup, writesOffValueForAllLeds)
+TEST(LedStripDriverPulseTestGroup, writesOffValueForAllLeds)
 {
     const Colour& COLOUR_OFF = COLOUR_GREEN;
 
@@ -338,4 +345,81 @@ TEST(LedStripDriverTestGroup, writesOffValueForAllLeds)
     drv.onTimerFired(&state, values);
 
     verify_colours(&COLOUR_OFF, lastValuesWritten, 3);
+}
+
+/***********************************************************************************************
+ * Blink pattern
+ **********************************************************************************************/
+TEST_GROUP(LedStripDriverBlinkTestGroup)
+{
+    void setup() {
+        const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+
+        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+        lastValuesWritten = new uint8_t[valuesLength];
+        memset(lastValuesWritten, 0, valuesLength);
+        memset(values, 0, valuesLength);
+    }
+
+    void teardown() {
+        delete driver;
+        delete[] lastValuesWritten;
+    }
+};
+
+TEST(LedStripDriverBlinkTestGroup, writesOnValueForAllLedsWithCorrectColour)
+{
+    const Colour& COLOUR_ON = COLOUR_RED;
+
+    driver->pattern(Pattern::blink)
+          ->period(10)
+          ->dutyCycle(50)
+          ->colourOn((Colour*)&COLOUR_ON)
+          ->colourOff((Colour*)&COLOUR_GREEN);
+
+    led_strip_state_t state = {
+      .counter = 0,
+    };
+
+    driver->onTimerFired(&state, values);
+
+    verify_colours(&COLOUR_ON, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverBlinkTestGroup, writesOffValueForAllLedsWithCorrectColourAfterPeriod)
+{
+    const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+    driver->pattern(Pattern::blink)
+          ->period(10)
+          ->dutyCycle(50)
+          ->colourOn((Colour*)&COLOUR_RED)
+          ->colourOff((Colour*)&COLOUR_OFF);
+
+    led_strip_state_t state = {
+      .counter = 5,
+    };
+
+    driver->onTimerFired(&state, values);
+
+    verify_colours(&COLOUR_OFF, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverBlinkTestGroup, resetsCounterAfterPeriod)
+{
+  const uint32_t PERIOD_MS = 10;
+
+    driver->pattern(Pattern::blink)
+          ->period(PERIOD_MS)
+          ->dutyCycle(50)
+          ->colourOn((Colour*)&COLOUR_RED)
+          ->colourOff((Colour*)&COLOUR_GREEN);
+
+    led_strip_state_t state = {
+      .counter = PERIOD_MS,
+    };
+
+    driver->onTimerFired(&state, values);
+
+    LONGS_EQUAL(1, state.counter);
 }
