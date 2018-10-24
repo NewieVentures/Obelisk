@@ -19,13 +19,15 @@ enum Direction {
 };
 
 typedef struct {
-  uint8_t num_leds;
-  void (*write_value_fn)(uint8_t *values, uint32_t length);
-  uint8_t resolution_ms;
+  uint32_t numLeds;
+  void (*writeValueFn)(uint8_t *values, uint32_t length);
+  uint32_t resolutionMs;
 } led_strip_config_t;
 
 typedef struct {
-    uint32_t counter;
+  uint32_t counter;
+  int32_t dutyDirection;
+  double dutyCycle;
 } led_strip_state_t;
 
 class LedStripDriver {
@@ -41,15 +43,16 @@ protected:
   uint8_t mPulseDutyCycle;
 
   Direction mSnakeDirection;
-  uint8_t mSnakeLength;
+  uint32_t mSnakeLength;
 
-  uint8_t mProgressInitial;
-  uint8_t mProgressIncrement;
+  uint32_t mProgressInitial;
+  uint32_t mProgressIncrement;
   uint32_t mProgressDelayMs;
 
 public:
+  void initState(led_strip_state_t *state);
   LedStripDriver(led_strip_config_t *config);
-  void onTimerFired(led_strip_state_t *state);
+  void onTimerFired(led_strip_state_t *state, uint8_t *values);
 
   LedStripDriver* period(uint32_t valueMs);
   LedStripDriver* colourOn(Colour *colour);
@@ -65,7 +68,7 @@ public:
   LedStripDriver* dutyCycle(uint8_t value);
 
   /* Used by snake pattern to set length of snake in LEDs */
-  LedStripDriver* length(uint8_t numLeds);
+  LedStripDriver* length(uint32_t numLeds);
 
   /*
   * Used by snake pattern to set direction of snake
@@ -75,10 +78,10 @@ public:
   LedStripDriver* direction(Direction direction);
 
   /* Used by progress pattern to set inital progress value */
-  LedStripDriver* initial(uint8_t progress);
+  LedStripDriver* initial(uint32_t progress);
 
   /* Used by progress pattern to set number of LEDs per increment */
-  LedStripDriver* increment(uint8_t leds);
+  LedStripDriver* increment(uint32_t leds);
 
   /* Used by progress pattern to set number of ms between increments */
   LedStripDriver* delay(uint32_t delayMs);

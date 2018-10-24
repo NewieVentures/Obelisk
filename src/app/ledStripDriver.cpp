@@ -1,13 +1,25 @@
 #include "ledStripDriver.h"
 #include "colour.h"
 
-const Colour COLOUR_DEFAULT = Colour(50, 50, 50);
+const Colour COLOUR_DEFAULT = Colour(50, 0, 0);
+const Colour COLOUR_BLACK = Colour(0, 0, 0);
+
+#define DUTY_DIR_INC 1
+#define DUTY_DIR_DEC -1
+#define DUTY_MAX 99
+#define DUTY_MIN 1
+
+void LedStripDriver::initState(led_strip_state_t *state) {
+  state->counter = 0;
+  state->dutyCycle = 1;
+  state->dutyDirection = DUTY_DIR_INC;
+}
 
 LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mConfig = config;
   mPeriodMs = 1000;
   mColourOn = (Colour*)&COLOUR_DEFAULT;
-  mColourOff = (Colour*)&COLOUR_DEFAULT;
+  mColourOff = (Colour*)&COLOUR_BLACK;
   mPattern = colour;
 
   mPulseDutyCycle = 50;
@@ -20,22 +32,65 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mProgressDelayMs = 1000;
 };
 
-void LedStripDriver::onTimerFired(led_strip_state_t *state) {
-    uint8_t values[3];
+inline void reverseDutyCycleDirection(led_strip_state_t *state) {
+  state->dutyDirection = -state->dutyDirection;
+}
 
-    uint32_t onTimeMs = (mPeriodMs * mPulseDutyCycle) / 100;
-
-    if (state->counter < onTimeMs) {
-      values[0] = mColourOn->getRed();
-      values[1] = mColourOn->getGreen();
-      values[2] = mColourOn->getBlue();
-    } else {
-      values[0] = mColourOff->getRed();
-      values[1] = mColourOff->getGreen();
-      values[2] = mColourOff->getBlue();
+void writeColourValues(uint8_t *values, uint32_t numLeds, Colour *colour) {
+  for (uint32_t i=0; i<numLeds; i++) {
+      uint32_t index = i*3;
+      values[index+0] = colour->getGreen();
+      values[index+1] = colour->getRed();
+      values[index+2] = colour->getBlue();
     }
+}
 
-    mConfig->write_value_fn(values, 3);
+double calcDutyCycleIncrement(uint8_t dutyCycle, uint32_t pulsePeriod, uint32_t pwmPeriod) {
+  return (double)(100 * 100 / dutyCycle)/((double)pulsePeriod / pwmPeriod);
+}
+
+void updateDutyCycle(led_strip_state_t *state, double increment, double decrement) {
+  if (state->dutyDirection == DUTY_DIR_INC) {
+    state->dutyCycle += increment;
+  } else {
+    state->dutyCycle -= decrement;
+  }
+}
+
+void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
+  const uint32_t numLedValues = 3*mConfig->numLeds;
+
+  uint32_t pwmPeriod = mConfig->resolutionMs * 10;
+  uint32_t onTimeMs = (uint32_t)((pwmPeriod * state->dutyCycle) / 100);
+
+  double dutyIncrement = calcDutyCycleIncrement(mPulseDutyCycle, mPeriodMs, pwmPeriod);
+  double dutyDecrement = calcDutyCycleIncrement((100 - mPulseDutyCycle), mPeriodMs, pwmPeriod);
+
+  Colour *colour;
+
+  if (state->counter >= pwmPeriod) {
+    state->counter = 0;
+    updateDutyCycle(state, dutyIncrement, dutyDecrement);
+
+    if (state->dutyCycle > DUTY_MAX) {
+      state->dutyCycle = DUTY_MAX;
+      reverseDutyCycleDirection(state);
+    } else if (state->dutyCycle < DUTY_MIN) {
+      state->dutyCycle = DUTY_MIN;
+      reverseDutyCycleDirection(state);
+    }
+  }
+
+  if (state->counter < onTimeMs) {
+    colour = mColourOn;
+  } else {
+    colour = mColourOff;
+  }
+
+  writeColourValues(values, mConfig->numLeds, colour);
+  mConfig->writeValueFn(values, numLedValues);
+
+  state->counter += mConfig->resolutionMs;
 };
 
 LedStripDriver* LedStripDriver::period(uint32_t valueMs) {
@@ -64,7 +119,7 @@ LedStripDriver* LedStripDriver::pattern(Pattern pattern) {
 };
 
 /* Used by snake pattern to set length of snake in LEDs */
-LedStripDriver* LedStripDriver::length(uint8_t numLeds) {
+LedStripDriver* LedStripDriver::length(uint32_t numLeds) {
   mSnakeLength = numLeds;
   return this;
 };
@@ -80,13 +135,13 @@ LedStripDriver* LedStripDriver::direction(Direction direction) {
 };
 
 /* Used by progress pattern to set inital progress value */
-LedStripDriver* LedStripDriver::initial(uint8_t progress) {
+LedStripDriver* LedStripDriver::initial(uint32_t progress) {
   mProgressInitial = progress;
   return this;
 };
 
 /* Used by progress pattern to set number of LEDs per increment */
-LedStripDriver* LedStripDriver::increment(uint8_t leds) {
+LedStripDriver* LedStripDriver::increment(uint32_t leds) {
   mProgressIncrement = leds;
   return this;
 };
