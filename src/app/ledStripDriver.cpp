@@ -111,6 +111,23 @@ void LedStripDriver::handleColourPattern(led_strip_state_t *state, uint8_t *valu
   writeColourValues(values, mConfig->numLeds, mColourOn);
 }
 
+void LedStripDriver::handleStrobePattern(led_strip_state_t *state, uint8_t *values) {
+  uint32_t onTimeMs = (uint32_t)(mPeriodMs / 2);
+  Colour *colour;
+
+  if (state->counter >= mPeriodMs) {
+    state->counter = 0;
+  }
+
+  if (state->counter < onTimeMs) {
+    colour = mColourOn;
+  } else {
+    colour = mColourOff;
+  }
+
+  writeColourValues(values, mConfig->numLeds, colour);
+}
+
 void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
   const uint32_t numLedValues = COLOURS_PER_LED * mConfig->numLeds;
 
@@ -125,6 +142,10 @@ void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
 
     case colour:
       handleColourPattern(state, values);
+      break;
+
+    case strobe:
+      handleStrobePattern(state, values);
       break;
 
     default:

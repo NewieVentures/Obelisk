@@ -444,7 +444,7 @@ TEST_GROUP(LedStripDriverColourTestGroup)
     }
 };
 
-TEST(LedStripDriverBlinkTestGroup, writesValueForAllLedsWithCorrectColour)
+TEST(LedStripDriverColourTestGroup, writesValueForAllLedsWithCorrectColour)
 {
     const Colour& COLOUR = COLOUR_RED;
 
@@ -458,4 +458,83 @@ TEST(LedStripDriverBlinkTestGroup, writesValueForAllLedsWithCorrectColour)
     driver->onTimerFired(&state, values);
 
     verify_colours(&COLOUR, lastValuesWritten, 3);
+}
+
+/***********************************************************************************************
+ * Strobe pattern
+ **********************************************************************************************/
+TEST_GROUP(LedStripDriverStrobeTestGroup)
+{
+    void setup() {
+        const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+
+        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+        lastValuesWritten = new uint8_t[valuesLength];
+        memset(lastValuesWritten, 0, valuesLength);
+        memset(values, 0, valuesLength);
+    }
+
+    void teardown() {
+        delete driver;
+        delete[] lastValuesWritten;
+    }
+};
+
+TEST(LedStripDriverStrobeTestGroup, writesOnValueForAllLedsWithCorrectColour)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::strobe)
+    ->period(10)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours(&COLOUR_ON, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverStrobeTestGroup, writesOffValueForAllLedsWithCorrectColour)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+  const uint32_t PERIOD_MS = 10;
+
+  driver->pattern(Pattern::strobe)
+    ->period(PERIOD_MS)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = PERIOD_MS / 2,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours(&COLOUR_OFF, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverStrobeTestGroup, counterResetAfterPeriod)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+  const uint32_t PERIOD_MS = 10;
+
+  driver->pattern(Pattern::strobe)
+    ->period(PERIOD_MS)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = PERIOD_MS,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(1, state.counter);
 }

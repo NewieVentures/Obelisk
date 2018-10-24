@@ -37,6 +37,7 @@ private:
   void handleBlinkPattern(led_strip_state_t *state, uint8_t *values);
   void handlePulsePattern(led_strip_state_t *state, uint8_t *values);
   void handleColourPattern(led_strip_state_t *state, uint8_t *values);
+  void handleStrobePattern(led_strip_state_t *state, uint8_t *values);
 
 protected:
   uint32_t mPeriodMs;
