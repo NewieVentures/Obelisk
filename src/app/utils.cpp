@@ -1,4 +1,7 @@
-#include "hexStrToInt.h"
+#include <stdexcept>
+#include "utils.h"
+
+using namespace std;
 
 static const uint8_t BASE_16 = 16;
 
@@ -27,7 +30,7 @@ static uint8_t convertChar(char c) {
   return val;
 }
 
-uint32_t hexStrToInt(std::string hexStr) {
+uint32_t hexStrToInt(string hexStr) {
     uint32_t val = 0;
     uint32_t len = hexStr.length();
 
@@ -39,4 +42,28 @@ uint32_t hexStrToInt(std::string hexStr) {
     }
 
     return val;
+}
+
+uint32_t strToInt(string str) {
+  uint32_t result = 0;
+  uint32_t len = str.length();
+  uint32_t exp = 0;
+  string invalidArgMsg = string("Not a number - ");
+
+  if (len == 0) {
+    throw invalid_argument(invalidArgMsg + "Empty string");
+  }
+
+  for (int32_t i=(len - 1); i >= 0; i--) {
+    char c = str.at(i);
+
+    if (c < OFFSET_NUMBERS || c > (OFFSET_NUMBERS + 9)) {
+      throw invalid_argument(invalidArgMsg + c);
+    }
+
+    result += ((uint32_t)c - OFFSET_NUMBERS) * (exp > 0 ? exp : 1);
+    exp = exp > 0 ? exp*10 : 10;
+  }
+
+  return result;
 }
