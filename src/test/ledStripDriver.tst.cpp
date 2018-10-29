@@ -642,7 +642,7 @@ TEST(LedStripDriverProgressTestGroup, resetsProgressAfterAllLedsOn)
   const Colour& COLOUR_ON = COLOUR_RED;
   const Colour& COLOUR_OFF = COLOUR_GREEN;
   const uint32_t INITIAL = 1;
-  const uint32_t PROGRESS = 2;
+  const uint32_t PROGRESS = CONFIG_LEDS_3.numLeds;
   const uint32_t DELAY_MS = 10;
 
   driver->pattern(Pattern::progress)
