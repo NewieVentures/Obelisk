@@ -1,9 +1,9 @@
 #ifndef OBELISK_UTILS_H
 #define OBELISK_UTILS_H
 
-#include <string>
+#include "Particle.h"
 
-extern uint32_t hexStrToInt(std::string hexStr);
-extern uint32_t strToInt(std::string str);
+extern uint32_t hexStrToInt(String hexStr);
+extern int32_t strToInt(uint32_t *value, String str);
 
 #endif

@@ -40,14 +40,26 @@ TEST_GROUP(StringToIntTestGroup) {
 
 TEST(StringToIntTestGroup, convertsStringToIntWithValidInput) {
   const uint32_t NUM = 123456;
+  uint32_t value;
 
-  LONGS_EQUAL(NUM, strToInt("123456"));
+  strToInt(&value, "123456");
+
+  LONGS_EQUAL(NUM, value);
 }
 
-TEST(StringToIntTestGroup, throwsErrorMessageIfNotANumber) {
-  CHECK_THROWS(invalid_argument, strToInt("123456a"));
+TEST(StringToIntTestGroup, returnsSuccessForValidInput) {
+  uint32_t value;
+
+  LONGS_EQUAL(0, strToInt(&value, "123456"));
 }
 
-TEST(StringToIntTestGroup, throwsErrorMessageForEmptyString) {
-  CHECK_THROWS(invalid_argument, strToInt(""));
+TEST(StringToIntTestGroup, returnsErrorIfNotANumber) {
+  uint32_t value;
+
+  LONGS_EQUAL(-1, strToInt(&value, "123456a"));
+}
+
+TEST(StringToIntTestGroup, returnsErrorForEmptyString) {
+  uint32_t value;
+  LONGS_EQUAL(-1, strToInt(&value, ""));
 }

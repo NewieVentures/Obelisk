@@ -1,7 +1,7 @@
 #ifndef OBELISK_ARG_PARSER_H
 #define OBELISK_ARG_PARSER_H
 
-#include "String.h"
+#include "Particle.h"
 
 /**
  * @brief Colour codes to be sent as '#RRGGBB' where each value is a hexadecimal string

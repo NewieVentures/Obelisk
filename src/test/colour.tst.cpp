@@ -14,14 +14,22 @@ TEST_GROUP(ColourTestGroup)
   }
 };
 
-TEST(ColourTestGroup, throwsInvalidArgumentForInvalidString)
+TEST(ColourTestGroup, isValidReturnsFalseForInvalidString)
 {
-  CHECK_THROWS(std::invalid_argument, Colour("saohetu"));
+  Colour colour = Colour("saohetu");
+  CHECK_FALSE(colour.isValid());
 }
 
-TEST(ColourTestGroup, throwsInvalidArgumentForInvalidLength)
+TEST(ColourTestGroup, isValidReturnsFalseForInvalidLength)
 {
-  CHECK_THROWS(std::invalid_argument, Colour("#1122334"));
+  Colour colour = Colour("#1122334");
+  CHECK_FALSE(colour.isValid());
+}
+
+TEST(ColourTestGroup, isValidReturnsTrueForValidColourString)
+{
+  Colour colour = Colour("#112233");
+  CHECK(colour.isValid());
 }
 
 TEST(ColourTestGroup, returnsCorrectRedValueFromString)

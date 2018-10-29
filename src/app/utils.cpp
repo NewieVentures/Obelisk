@@ -1,7 +1,7 @@
-#include <stdexcept>
 #include "utils.h"
 
-using namespace std;
+#define RET_VAL_SUC 0
+#define RET_VAL_ERR -1
 
 static const uint8_t BASE_16 = 16;
 
@@ -30,13 +30,13 @@ static uint8_t convertChar(char c) {
   return val;
 }
 
-uint32_t hexStrToInt(string hexStr) {
+uint32_t hexStrToInt(String hexStr) {
     uint32_t val = 0;
     uint32_t len = hexStr.length();
 
     for (uint32_t i=0; i < len; i++) {
       uint32_t pos = len - i - 1; // position in number
-      uint32_t converted = convertChar(hexStr.at(i));
+      uint32_t converted = convertChar(hexStr.charAt(i));
 
       val += pos > 0 ? BASE_16 * pos * converted : converted;
     }
@@ -44,26 +44,32 @@ uint32_t hexStrToInt(string hexStr) {
     return val;
 }
 
-uint32_t strToInt(string str) {
-  uint32_t result = 0;
+/**
+ * Convert a string to an unsigned int (no negative numbers)
+ * @param value parsed value
+ * @param str string to parse
+ * @return 0 for success, -1 for error
+ */
+int32_t strToInt(uint32_t *value, String str) {
   uint32_t len = str.length();
   uint32_t exp = 0;
-  string invalidArgMsg = string("Not a number - ");
+
+  *value = 0;
 
   if (len == 0) {
-    throw invalid_argument(invalidArgMsg + "Empty string");
+    return RET_VAL_ERR;
   }
 
   for (int32_t i=(len - 1); i >= 0; i--) {
-    char c = str.at(i);
+    char c = str.charAt(i);
 
     if (c < OFFSET_NUMBERS || c > (OFFSET_NUMBERS + 9)) {
-      throw invalid_argument(invalidArgMsg + c);
+      return RET_VAL_ERR;
     }
 
-    result += ((uint32_t)c - OFFSET_NUMBERS) * (exp > 0 ? exp : 1);
+    *value += ((uint32_t)c - OFFSET_NUMBERS) * (exp > 0 ? exp : 1);
     exp = exp > 0 ? exp*10 : 10;
   }
 
-  return result;
+  return RET_VAL_SUC;
 }

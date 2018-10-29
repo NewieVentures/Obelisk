@@ -1,7 +1,4 @@
-#include <stdexcept>
-#include <cstring>
-
-#include "String.h"
+#include "Particle.h"
 #include "colour.h"
 #include "argParser.h"
 #include "utils.h"
@@ -19,22 +16,22 @@ namespace argParser {
    */
   int32_t tokeniseArgs(String* output, const String args, const uint32_t argLimit) {
     String s(args);
-    const String delimiter = ",";
+    const char delimiter = ',';
 
-    size_t pos = 0;
+    int32_t pos = 0;
     uint8_t argCount = 0;
 
-    while ((pos = s.find(delimiter)) != string::npos) {
-      output[argCount] = s.substr(0, pos);
+    while ((pos = s.indexOf(delimiter)) >= 0) {
+      output[argCount] = s.substring(0, pos);
       ++argCount;
-      s.erase(0, pos + delimiter.length());
+      s = s.substring(pos + sizeof(delimiter));
 
-      if (argCount >= argLimit && !s.empty()) {
+      if (argCount >= argLimit && s.length() > 0) {
         return RET_VAL_TOO_MANY_ARGS;
       }
     }
 
-    if (argCount < argLimit && s.empty()) {
+    if (argCount < argLimit && s.length() == 0) {
       return RET_VAL_TOO_FEW_ARGS;
     }
 
@@ -60,18 +57,18 @@ namespace argParser {
       String *arg = &tokenisedArgs[i];
       const ArgInfo *info = &config->info[i];
 
-      try {
-        if (info->type == ARG_TYPE_NUMBER) {
-          int32_t value = strToInt(*arg);
-          if (value < info->min || value > info->max) {
-            return RET_VAL_INVALID_ARG;
-          }
-        } else {
-          Colour col = Colour(*arg); // parse colour value and throw if invalid
-          col.getRed(); // stop unused variable warning...
+      if (info->type == ARG_TYPE_NUMBER) {
+        int32_t value;
+        int32_t result = strToInt((uint32_t*)&value, *arg);
+
+        if (result != 0 || value < info->min || value > info->max) {
+          return RET_VAL_INVALID_ARG;
         }
-      } catch (const std::invalid_argument& ia) {
-        return RET_VAL_INVALID_ARG;
+      } else {
+        Colour col = Colour(*arg);
+        if (!col.isValid()) {
+          return RET_VAL_INVALID_ARG;
+        }
       }
     }
 
