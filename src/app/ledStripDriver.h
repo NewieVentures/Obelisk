@@ -53,8 +53,11 @@ protected:
   uint32_t mSnakeLength;
 
   uint32_t mProgressInitial;
+  uint32_t mProgressFinal;
   uint32_t mProgressIncrement;
-  uint32_t mProgressDelayMs;
+  uint32_t mProgressIncrementDelayMs;
+  uint32_t mProgressResetDelayMs;
+  Direction mProgressDirection;
 
 public:
   void initState(led_strip_state_t *state);
@@ -80,18 +83,31 @@ public:
   /*
   * Used by snake pattern to set direction of snake
   * eg forward = first LED to last
-  *    backward = last LED to first
+  *    reverse = last LED to first
   */
-  LedStripDriver* direction(Direction direction);
+  LedStripDriver* snakeDirection(Direction direction);
 
   /* Used by progress pattern to set inital progress value */
-  LedStripDriver* initial(uint32_t progress);
+  LedStripDriver* initialValue(uint32_t progress);
 
   /* Used by progress pattern to set number of LEDs per increment */
   LedStripDriver* increment(uint32_t leds);
 
   /* Used by progress pattern to set number of ms between increments */
-  LedStripDriver* delay(uint32_t delayMs);
+  LedStripDriver* incDelay(uint32_t delayMs);
+
+  /* Used by progress pattern to set number of ms between patterns */
+  LedStripDriver* resetDelay(uint32_t delayMs);
+
+  /* Used by progress pattern to set maximum progress value */
+  LedStripDriver* finalValue(uint32_t progress);
+
+  /*
+  * Used by progress pattern to set direction of increment
+  * eg forward = first LED to last
+  *    reverse = last LED to first
+  */
+  LedStripDriver* progressDirection(Direction direction);
 };
 
 #endif

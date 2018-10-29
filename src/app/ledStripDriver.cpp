@@ -30,8 +30,11 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mSnakeLength = 3;
 
   mProgressInitial = 0;
+  mProgressFinal = config->numLeds;
   mProgressIncrement = 1;
-  mProgressDelayMs = 1000;
+  mProgressIncrementDelayMs = 1000;
+  mProgressResetDelayMs = 0;
+  mProgressDirection = Direction::forward;
 };
 
 inline void reverseDutyCycleDirection(led_strip_state_t *state) {
@@ -130,20 +133,28 @@ void LedStripDriver::handleStrobePattern(led_strip_state_t *state, uint8_t *valu
 
 void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *values) {
   uint32_t progressValue = mProgressInitial + state->progress;
-  uint32_t ledsOn = (progressValue > mConfig->numLeds ? mConfig->numLeds : progressValue);
-  uint32_t ledsOff = mConfig->numLeds - ledsOn;
+  uint32_t ledsOn = (progressValue > mProgressFinal ? mProgressFinal : progressValue);
+  uint32_t ledsOff = mProgressFinal - ledsOn;
 
-  if (state->counter >= mProgressDelayMs) {
+  if (ledsOff == 0) {
+    if (state->counter >= (mProgressIncrementDelayMs + mProgressResetDelayMs)) {
+      state->counter = 0;
+      state->progress = 0;
+    }
+  } else if (state->counter >= mProgressIncrementDelayMs) {
     state->progress += 1;
     state->counter = 0;
   }
 
-  if (ledsOff == 0) {
-    state->progress = 0;
+  if (mProgressDirection == forward) {
+    writeColourValues(values, ledsOn, mColourOn);
+    writeColourValues(&values[ledsOn * COLOURS_PER_LED], ledsOff, mColourOff);
+  } else {
+    uint32_t onIndex = (mConfig->numLeds - ledsOn) * COLOURS_PER_LED;
+    uint32_t offIndex = onIndex - (ledsOff * COLOURS_PER_LED);
+    writeColourValues(&values[onIndex], ledsOn, mColourOn);
+    writeColourValues(&values[offIndex], ledsOff, mColourOff);
   }
-
-  writeColourValues(values, ledsOn, mColourOn);
-  writeColourValues(&values[ledsOn * COLOURS_PER_LED], ledsOff, mColourOff);
 }
 
 void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
@@ -212,16 +223,26 @@ LedStripDriver* LedStripDriver::length(uint32_t numLeds) {
 
 /*
 * Used by snake pattern to set direction of snake
-* eg Forward = first LED to last
-*    Backward = last LED to first
+* eg forward = first LED to last
+*    reverse = last LED to first
 */
-LedStripDriver* LedStripDriver::direction(Direction direction) {
+LedStripDriver* LedStripDriver::snakeDirection(Direction direction) {
   mSnakeDirection = direction;
   return this;
 };
 
+/*
+* Used by progress pattern to set direction of increment
+* eg forward = first LED to last
+*    reverse = last LED to first
+*/
+LedStripDriver* LedStripDriver::progressDirection(Direction direction) {
+  mProgressDirection = direction;
+  return this;
+};
+
 /* Used by progress pattern to set inital progress value */
-LedStripDriver* LedStripDriver::initial(uint32_t progress) {
+LedStripDriver* LedStripDriver::initialValue(uint32_t progress) {
   mProgressInitial = progress;
   return this;
 };
@@ -233,7 +254,19 @@ LedStripDriver* LedStripDriver::increment(uint32_t leds) {
 };
 
 /* Used by progress pattern to set number of ms between increments */
-LedStripDriver* LedStripDriver::delay(uint32_t delayMs) {
-  mProgressDelayMs = delayMs;
+LedStripDriver* LedStripDriver::incDelay(uint32_t delayMs) {
+  mProgressIncrementDelayMs = delayMs;
+  return this;
+};
+
+/* Used by progress pattern to set number of ms between patterns */
+LedStripDriver* LedStripDriver::resetDelay(uint32_t delayMs) {
+  mProgressResetDelayMs = delayMs;
+  return this;
+};
+
+/* Used by progress pattern to set final progress value */
+LedStripDriver* LedStripDriver::finalValue(uint32_t progress) {
+  mProgressFinal = progress;
   return this;
 };

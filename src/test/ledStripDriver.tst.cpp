@@ -565,8 +565,7 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectInitialValue)
   const Colour& COLOUR_OFF = COLOUR_GREEN;
 
   driver->pattern(Pattern::progress)
-    ->initial(1)
-    ->direction(Direction::forward)
+    ->initialValue(1)
     ->colourOn((Colour*)&COLOUR_ON)
     ->colourOff((Colour*)&COLOUR_OFF);
 
@@ -585,7 +584,7 @@ TEST(LedStripDriverProgressTestGroup, incrementsProgressValueAfterDelay)
   const uint32_t DELAY_MS = 10;
 
   driver->pattern(Pattern::progress)
-    ->delay(DELAY_MS);
+    ->incDelay(DELAY_MS);
 
   led_strip_state_t state = {
     .counter = DELAY_MS,
@@ -602,7 +601,7 @@ TEST(LedStripDriverProgressTestGroup, resetsCounterAfterDelay)
   const uint32_t DELAY_MS = 10;
 
   driver->pattern(Pattern::progress)
-    ->delay(DELAY_MS);
+    ->incDelay(DELAY_MS);
 
   led_strip_state_t state = {
     .counter = DELAY_MS,
@@ -614,15 +613,15 @@ TEST(LedStripDriverProgressTestGroup, resetsCounterAfterDelay)
   LONGS_EQUAL(1, state.counter);
 }
 
-TEST(LedStripDriverProgressTestGroup, writesCorrectValue)
+TEST(LedStripDriverProgressTestGroup, writesCorrectValueForForwardDirection)
 {
   const Colour& COLOUR_ON = COLOUR_RED;
   const Colour& COLOUR_OFF = COLOUR_GREEN;
   const uint32_t PROGRESS = 2;
 
   driver->pattern(Pattern::progress)
-    ->initial(0)
-    ->direction(Direction::forward)
+    ->initialValue(0)
+    ->progressDirection(Direction::forward)
     ->colourOn((Colour*)&COLOUR_ON)
     ->colourOff((Colour*)&COLOUR_OFF);
 
@@ -637,18 +636,45 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectValue)
   verify_colours(&COLOUR_OFF, &lastValuesWritten[PROGRESS * COLOURS_PER_LED], 1);
 }
 
-TEST(LedStripDriverProgressTestGroup, resetsProgressAfterAllLedsOn)
+TEST(LedStripDriverProgressTestGroup, resetsProgressAfterFinalValueAndResetDelay)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+  const uint32_t FINAL = 2;
+  const uint32_t DELAY_MS = 10;
+  const uint32_t RESET_DELAY_MS = 3;
+
+  driver->pattern(Pattern::progress)
+    ->finalValue(FINAL)
+    ->incDelay(DELAY_MS)
+    ->resetDelay(RESET_DELAY_MS)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = DELAY_MS + RESET_DELAY_MS,
+    .progress = FINAL,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(0, state.progress);
+}
+
+TEST(LedStripDriverProgressTestGroup, doesNotUpdateProgressAfterAllLedsOnButBeforeResetDelay)
 {
   const Colour& COLOUR_ON = COLOUR_RED;
   const Colour& COLOUR_OFF = COLOUR_GREEN;
   const uint32_t INITIAL = 1;
   const uint32_t PROGRESS = CONFIG_LEDS_3.numLeds;
   const uint32_t DELAY_MS = 10;
+  const uint32_t RESET_DELAY_MS = 3;
 
   driver->pattern(Pattern::progress)
-    ->initial(INITIAL)
-    ->delay(DELAY_MS)
-    ->direction(Direction::forward)
+    ->initialValue(INITIAL)
+    ->incDelay(DELAY_MS)
+    ->resetDelay(RESET_DELAY_MS)
+    ->progressDirection(Direction::forward)
     ->colourOn((Colour*)&COLOUR_ON)
     ->colourOff((Colour*)&COLOUR_OFF);
 
@@ -659,5 +685,28 @@ TEST(LedStripDriverProgressTestGroup, resetsProgressAfterAllLedsOn)
 
   driver->onTimerFired(&state, values);
 
-  LONGS_EQUAL(0, state.progress);
+  LONGS_EQUAL(PROGRESS, state.progress);
+}
+
+TEST(LedStripDriverProgressTestGroup, writesCorrectValueForReverseDirection)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+  const uint32_t PROGRESS = 2;
+
+  driver->pattern(Pattern::progress)
+    ->initialValue(0)
+    ->progressDirection(Direction::reverse)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .progress = PROGRESS,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour(&COLOUR_OFF, lastValuesWritten);
+  verify_colours(&COLOUR_ON, &lastValuesWritten[COLOURS_PER_LED], 2);
 }
