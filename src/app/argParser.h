@@ -29,7 +29,7 @@ namespace argParser {
   } ArgConfig;
 
 
-  int32_t parseAndValidateArgs(String* output, ArgConfig* config, String args);
+  int32_t parseAndValidateArgs(String* output, const ArgConfig* config, String args);
 }
 
 #endif

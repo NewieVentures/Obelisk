@@ -3,8 +3,6 @@
 #include "argParser.h"
 #include "utils.h"
 
-using namespace std;
-
 namespace argParser {
   /**
    * Split string into tokens using ',' as the delimiter
@@ -41,9 +39,8 @@ namespace argParser {
     return argCount;
   }
 
-  int32_t parseAndValidateArgs(String* output, ArgConfig* config, String args) {
-    String tokenisedArgs[config->length];
-    int32_t argCount = tokeniseArgs(tokenisedArgs, args, config->length);
+  int32_t parseAndValidateArgs(String* output, const ArgConfig* config, String args) {
+    int32_t argCount = tokeniseArgs(output, args, config->length);
 
     if (argCount < 0) {
       return argCount;
@@ -54,7 +51,7 @@ namespace argParser {
     }
 
     for (uint32_t i=0; i<config->length; i++) {
-      String *arg = &tokenisedArgs[i];
+      String *arg = &output[i];
       const ArgInfo *info = &config->info[i];
 
       if (info->type == ARG_TYPE_NUMBER) {

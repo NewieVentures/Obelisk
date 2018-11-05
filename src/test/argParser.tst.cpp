@@ -95,3 +95,15 @@ TEST(ArgParserTestGroup, returnsErrorForNumberAboveMaximum)
   LONGS_EQUAL(RET_VAL_INVALID_ARG,
               parseAndValidateArgs(output, (ArgConfig*)&ARG_CONFIG_STROBE, "1001,#FF0000"));
 }
+
+TEST(ArgParserTestGroup, writesParsedArgsToOutputCorrectly)
+{
+  const String ARG_PERIOD("1000");
+  const String ARG_COLOUR("#FF0000");
+  const String ARGS = ARG_PERIOD + String(",") + ARG_COLOUR;
+
+  parseAndValidateArgs(output, (ArgConfig*)&ARG_CONFIG_STROBE, ARGS);
+
+  STRCMP_EQUAL(ARG_PERIOD, output[0]);
+  STRCMP_EQUAL(ARG_COLOUR, output[1]);
+}
