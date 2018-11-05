@@ -1,4 +1,4 @@
-(module Choke_Schaffner_RN143-02-33.1x32.5mm (layer F.Cu) (tedit 5BC53BE1)
+(module Choke_Schaffner_RN143-02-33.1x32.5mm (layer F.Cu) (tedit 5BCEB87F)
   (descr "Current-compensated Chokes, Scaffner, RN142-04, 33.1mmx32.5mm https://www.schaffner.com/products/download/product/datasheet/rn-series-common-mode-chokes-new/")
   (tags "chokes schaffner tht")
   (fp_text reference REF** (at -15.06 13.81) (layer F.SilkS)
@@ -40,7 +40,7 @@
   (pad 2 thru_hole circle (at 15.275 -10.275) (size 4 4) (drill 2) (layers *.Cu *.Mask))
   (pad 3 thru_hole circle (at -15.275 10.275) (size 4 4) (drill 2) (layers *.Cu *.Mask))
   (pad 4 thru_hole circle (at 15.275 10.275) (size 4 4) (drill 2) (layers *.Cu *.Mask))
-  (model "/home/mitchell/workspace/Faraday (obelisk)/sch/3D files/RN143-x-02.stp"
+  (model "${KIPRJMOD}/../3D files/RN143-x-02.stp"
     (offset (xyz 0 0 19.5))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 180 90))

@@ -1,19 +1,19 @@
 #ifndef OBELISK_COLOUR_H
 #define OBELISK_COLOUR_H
 
-#include <string>
-
-using namespace std;
+#include "Particle.h"
 
 class Colour {
   uint8_t mRed, mGreen, mBlue;
+  bool mIsValid;
 
 public:
   Colour(uint8_t, uint8_t, uint8_t);
-  Colour(string);
+  Colour(String);
   uint8_t getRed() const;
   uint8_t getGreen() const;
   uint8_t getBlue() const;
+  bool isValid();
 };
 
 bool operator==(const Colour& lhs, const Colour& rhs);

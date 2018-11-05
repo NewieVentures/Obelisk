@@ -1,10 +1,14 @@
 #include <CppUTest/TestHarness.h>
 #include <CppUTestExt/MockSupport.h>
 
-#include "hexStrToInt.h"
+#include "utils.h"
 #include <iostream>
 #include <stdlib.h>
 #include <stdexcept>
+#include <string>
+#include <stdexcept>
+
+using namespace std;
 
 TEST_GROUP(HexStringToIntTestGroup) {
 
@@ -28,4 +32,34 @@ TEST(HexStringToIntTestGroup, returnsCorrectResultForSingleNumber)
 TEST(HexStringToIntTestGroup, returnsCorrectResultForTwoChars)
 {
     BYTES_EQUAL((uint8_t)245, hexStrToInt("F5"));
+}
+
+TEST_GROUP(StringToIntTestGroup) {
+
+};
+
+TEST(StringToIntTestGroup, convertsStringToIntWithValidInput) {
+  const uint32_t NUM = 123456;
+  uint32_t value;
+
+  strToInt(&value, "123456");
+
+  LONGS_EQUAL(NUM, value);
+}
+
+TEST(StringToIntTestGroup, returnsSuccessForValidInput) {
+  uint32_t value;
+
+  LONGS_EQUAL(0, strToInt(&value, "123456"));
+}
+
+TEST(StringToIntTestGroup, returnsErrorIfNotANumber) {
+  uint32_t value;
+
+  LONGS_EQUAL(-1, strToInt(&value, "123456a"));
+}
+
+TEST(StringToIntTestGroup, returnsErrorForEmptyString) {
+  uint32_t value;
+  LONGS_EQUAL(-1, strToInt(&value, ""));
 }

@@ -19,18 +19,27 @@ enum Direction {
 };
 
 typedef struct {
-  uint8_t num_leds;
-  void (*write_value_fn)(uint8_t *values, uint32_t length);
-  uint8_t resolution_ms;
+  uint32_t numLeds;
+  void (*writeValueFn)(uint8_t *values, uint32_t length);
+  uint32_t resolutionMs;
 } led_strip_config_t;
 
 typedef struct {
-    uint32_t counter;
+  uint32_t counter;
+  int32_t dutyDirection;
+  double dutyCycle;
+  uint32_t progress;
 } led_strip_state_t;
 
 class LedStripDriver {
 private:
   led_strip_config_t* mConfig;
+
+  void handleBlinkPattern(led_strip_state_t *state, uint8_t *values);
+  void handlePulsePattern(led_strip_state_t *state, uint8_t *values);
+  void handleColourPattern(led_strip_state_t *state, uint8_t *values);
+  void handleStrobePattern(led_strip_state_t *state, uint8_t *values);
+  void handleProgressPattern(led_strip_state_t *state, uint8_t *values);
 
 protected:
   uint32_t mPeriodMs;
@@ -38,18 +47,22 @@ protected:
   Colour *mColourOff;
   Pattern mPattern;
 
-  uint8_t mPulseDutyCycle;
+  uint8_t mDutyCycle;
 
   Direction mSnakeDirection;
-  uint8_t mSnakeLength;
+  uint32_t mSnakeLength;
 
-  uint8_t mProgressInitial;
-  uint8_t mProgressIncrement;
-  uint32_t mProgressDelayMs;
+  uint32_t mProgressInitial;
+  uint32_t mProgressFinal;
+  uint32_t mProgressIncrement;
+  uint32_t mProgressIncrementDelayMs;
+  uint32_t mProgressResetDelayMs;
+  Direction mProgressDirection;
 
 public:
+  void initState(led_strip_state_t *state);
   LedStripDriver(led_strip_config_t *config);
-  void onTimerFired(led_strip_state_t *state);
+  void onTimerFired(led_strip_state_t *state, uint8_t *values);
 
   LedStripDriver* period(uint32_t valueMs);
   LedStripDriver* colourOn(Colour *colour);
@@ -65,23 +78,36 @@ public:
   LedStripDriver* dutyCycle(uint8_t value);
 
   /* Used by snake pattern to set length of snake in LEDs */
-  LedStripDriver* length(uint8_t numLeds);
+  LedStripDriver* length(uint32_t numLeds);
 
   /*
   * Used by snake pattern to set direction of snake
   * eg forward = first LED to last
-  *    backward = last LED to first
+  *    reverse = last LED to first
   */
-  LedStripDriver* direction(Direction direction);
+  LedStripDriver* snakeDirection(Direction direction);
 
   /* Used by progress pattern to set inital progress value */
-  LedStripDriver* initial(uint8_t progress);
+  LedStripDriver* initialValue(uint32_t progress);
 
   /* Used by progress pattern to set number of LEDs per increment */
-  LedStripDriver* increment(uint8_t leds);
+  LedStripDriver* increment(uint32_t leds);
 
   /* Used by progress pattern to set number of ms between increments */
-  LedStripDriver* delay(uint32_t delayMs);
+  LedStripDriver* incDelay(uint32_t delayMs);
+
+  /* Used by progress pattern to set number of ms between patterns */
+  LedStripDriver* resetDelay(uint32_t delayMs);
+
+  /* Used by progress pattern to set maximum progress value */
+  LedStripDriver* finalValue(uint32_t progress);
+
+  /*
+  * Used by progress pattern to set direction of increment
+  * eg forward = first LED to last
+  *    reverse = last LED to first
+  */
+  LedStripDriver* progressDirection(Direction direction);
 };
 
 #endif

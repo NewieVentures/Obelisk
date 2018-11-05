@@ -6,10 +6,10 @@ TEST_LIB := CppUTest CppUTestExt
 TEST_LIB_DIRS := /usr/local/lib
 TEST_DIR := test
 
-TEST_SRC := colour.cpp hexStrToInt.cpp ledStripDriver.cpp
+TEST_SRC := colour.cpp utils.cpp ledStripDriver.cpp argParser.cpp
 
-CFLAGS := -g -std=c99 -Wall -Os -I$(APP_DIR)
-CXXFLAGS := -g -std=c++11 -Wall -Os -I$(APP_DIR)
+CFLAGS := -g -std=c99 -Wall -Os -I$(TEST_DIR) -I$(APP_DIR)
+CXXFLAGS := -g -std=c++11 -Wall -Os -I$(TEST_DIR) -I$(APP_DIR)
 
 #*******************************************************************************
 # Don't edit below this line!
