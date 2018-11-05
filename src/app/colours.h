@@ -5,6 +5,8 @@
 
 #define COLOUR_BLACK Colour(0, 0, 0)
 #define COLOUR_RED Colour(255, 0, 0)
+#define COLOUR_GREEN Colour(0, 255, 0)
+#define COLOUR_BLUE Colour(0, 0, 255)
 #define COLOUR_ORANGE Colour(0xFF, 0x7F, 0x00)
 #define COLOUR_LIGHT_GREY Colour(150, 150, 150)
 #define COLOUR_DARK_GREY Colour(50, 50, 50)

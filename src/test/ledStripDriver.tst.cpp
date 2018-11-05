@@ -710,3 +710,44 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectValueForReverseDirection)
   verify_colour(&COLOUR_OFF, lastValuesWritten);
   verify_colours(&COLOUR_ON, &lastValuesWritten[COLOURS_PER_LED], 2);
 }
+
+/***********************************************************************************************
+ * Gradient pattern
+ **********************************************************************************************/
+TEST_GROUP(LedStripDriverGradientTestGroup)
+{
+    void setup() {
+        const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+
+        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+        lastValuesWritten = new uint8_t[valuesLength];
+        memset(lastValuesWritten, 0, valuesLength);
+        memset(values, 0, valuesLength);
+    }
+
+    void teardown() {
+        delete driver;
+        delete[] lastValuesWritten;
+    }
+};
+
+TEST(LedStripDriverGradientTestGroup, writesCorrectValues)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour COLOUR_MID = Colour(128, 127, 0);
+
+  driver->pattern(Pattern::gradient)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END);
+
+  led_strip_state_t state = {
+    .counter = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour(&COLOUR_START, lastValuesWritten);
+  verify_colour(&COLOUR_MID, &lastValuesWritten[COLOURS_PER_LED]);
+  verify_colour(&COLOUR_END, &lastValuesWritten[2 * COLOURS_PER_LED]);
+}

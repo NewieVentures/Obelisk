@@ -146,7 +146,7 @@ void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *va
     state->counter = 0;
   }
 
-  if (mProgressDirection == forward) {
+  if (mProgressDirection == Direction::forward) {
     writeColourValues(values, ledsOn, mColourOn);
     writeColourValues(&values[ledsOn * COLOURS_PER_LED], ledsOff, mColourOff);
   } else {
@@ -154,6 +154,56 @@ void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *va
     uint32_t offIndex = onIndex - (ledsOff * COLOURS_PER_LED);
     writeColourValues(&values[onIndex], ledsOn, mColourOn);
     writeColourValues(&values[offIndex], ledsOff, mColourOff);
+  }
+}
+
+#define INDEX_RED 1
+#define INDEX_GREEN 0
+#define INDEX_BLUE 2
+
+uint8_t calcGradientColourValue(int32_t gradient, int32_t offset, uint32_t step) {
+  int32_t value = (gradient * (int32_t)step) + offset;
+
+  if (value < 0) {
+    value = 0;
+  }
+
+  if (value > 255) {
+    value = 255;
+  }
+
+  return value;
+}
+
+void LedStripDriver::handleGradientPattern(led_strip_state_t *state, uint8_t *values) {
+  const uint32_t NUM_LEDS = mConfig->numLeds;
+  uint32_t steps = NUM_LEDS - 1;
+  int32_t offsets[COLOURS_PER_LED];
+  int32_t gradients[COLOURS_PER_LED];
+
+  offsets[INDEX_RED] = mColourOn->getRed();
+  offsets[INDEX_GREEN] = mColourOn->getGreen();
+  offsets[INDEX_BLUE] = mColourOn->getBlue();
+
+  gradients[INDEX_RED] = (mColourOff->getRed() - offsets[INDEX_RED]) / (int32_t)steps;
+  gradients[INDEX_GREEN] = (mColourOff->getGreen() - offsets[INDEX_GREEN]) / steps;
+  gradients[INDEX_BLUE] = (mColourOff->getBlue() - offsets[INDEX_BLUE]) / steps;
+
+  //ensure no rounding errors for end values
+  values[(NUM_LEDS - 1) * COLOURS_PER_LED + INDEX_RED] = mColourOff->getRed();
+  values[(NUM_LEDS - 1) * COLOURS_PER_LED + INDEX_GREEN] = mColourOff->getGreen();
+  values[(NUM_LEDS - 1) * COLOURS_PER_LED + INDEX_BLUE] = mColourOff->getBlue();
+
+  for (uint32_t i=0; i < (NUM_LEDS - 1); i++) {
+    values[i * COLOURS_PER_LED + INDEX_RED] = calcGradientColourValue(gradients[INDEX_RED],
+                                                                      offsets[INDEX_RED],
+                                                                      i);
+    values[i * COLOURS_PER_LED + INDEX_GREEN] = calcGradientColourValue(gradients[INDEX_GREEN],
+                                                                        offsets[INDEX_GREEN],
+                                                                        i);
+    values[i * COLOURS_PER_LED + INDEX_BLUE] = calcGradientColourValue(gradients[INDEX_BLUE],
+                                                                       offsets[INDEX_BLUE],
+                                                                       i);
   }
 }
 
@@ -179,6 +229,10 @@ void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
 
     case progress:
       handleProgressPattern(state, values);
+      break;
+
+  case gradient:
+      handleGradientPattern(state, values);
       break;
 
     default:
