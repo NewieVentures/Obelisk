@@ -2,12 +2,21 @@
 #include "stm32f2xx_usart.h"
 #include "stm32f2xx_rcc.h"
 
+#define PIN_DRV_EN B0
+#define PIN_RCV_EN B2
+
+#define ENABLE true
+#define DISABLE false
+
 static const uint8_t CHAR_BREAK = 0;
 static const uint8_t START_CODE_NULL = 0;
 static const uint32_t BAUD_BREAK = 80000;
 static const uint32_t BAUD_DMX = 250000;
 
 namespace dmx {
+  void receiverControl(bool enable);
+  void driverControl(bool enable);
+
   void configureBaudRate(USART_TypeDef* USARTx, uint32_t baudRate) {
     RCC_ClocksTypeDef RCC_ClocksStatus;
 
@@ -47,11 +56,35 @@ namespace dmx {
     USARTx->BRR = (uint16_t)tmpreg;
   }
 
+  void receiverControl(bool enable) {
+    if (enable) {
+      pinResetFast(PIN_RCV_EN); //active low
+    } else {
+      pinSetFast(PIN_RCV_EN);
+    }
+  }
+
+  void driverControl(bool enable) {
+    if (enable) {
+      pinSetFast(PIN_DRV_EN);
+    } else {
+      pinResetFast(PIN_DRV_EN);
+    }
+  }
+
   void setup() {
+    pinMode(PIN_DRV_EN, OUTPUT);
+    pinMode(PIN_RCV_EN, OUTPUT);
+
+    //disable both driver and receiver
+    receiverControl(DISABLE);
+
     Serial1.begin(BAUD_DMX, SERIAL_8N2);
   }
 
   void send(const uint8_t *data, const uint32_t len) {
+    driverControl(ENABLE);
+
     //send the break and mark after break for DMX by sending a break at a slower
     //baud rate.
     configureBaudRate(USART1, BAUD_BREAK);
@@ -63,5 +96,7 @@ namespace dmx {
 
     Serial1.write(data, len);
     Serial1.flush();
+
+    driverControl(DISABLE);
   }
 }
