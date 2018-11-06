@@ -1,43 +1,40 @@
 #include "Particle.h"
+
 #include "dmx.h"
 #include "led.h"
 #include "serialDebug.h"
 #include "colour.h"
 #include "colours.h"
 #include "ledStripDriver.h"
+#include "cloudFunctions.h"
 
-static const int DEBUG_PIN_1 = D1;
-static const int DEBUG_PIN_2 = D2;
 static const String LOG_MODULE = "MAIN";
 
-#define NUM_LEDS 5
+#define NUM_LEDS 18
 #define COLOURS_PER_LED 3
 static uint8_t ledValues[NUM_LEDS * COLOURS_PER_LED];
 
 static void updateLedsDmx(uint8_t *values, uint32_t length) {
-  pinSetFast(DEBUG_PIN_2);
   dmx::send(values, length);
-  pinResetFast(DEBUG_PIN_2);
 }
 
-static const uint32_t TIMER_RESOLUTION_MS = 1;
+static const uint32_t TIMER_RESOLUTION_MS = 5;
 static const led_strip_config_t CONFIG_LED_STRIP = {
     .numLeds = NUM_LEDS,
     .writeValueFn = updateLedsDmx,
     .resolutionMs = TIMER_RESOLUTION_MS,
 };
 
-static LedStripDriver* ledDriver;
+static LedStripDriver *ledDriver;
 static led_strip_state_t ledState;
+static CloudFunctions *cloudFunctions;
 
 static void onLedTimerFired() {
-  pinSetFast(DEBUG_PIN_1);
   ledDriver->onTimerFired(&ledState, ledValues);
-  pinResetFast(DEBUG_PIN_1);
 }
 
-const Colour& COLOUR_ON = COLOUR_ORANGE;
-const Colour& COLOUR_OFF = COLOUR_BLACK;
+const Colour& COLOUR_ON = COLOUR_RED;
+const Colour& COLOUR_OFF = COLOUR_BLUE;
 
 Timer ledTimer(TIMER_RESOLUTION_MS, onLedTimerFired);
 
@@ -51,35 +48,22 @@ void registerFunc(String funcName, int32_t (*func)(String arg)) {
   }
 }
 
+int regFn(String name, int (CloudFunctions::*cloudFn)(String arg), CloudFunctions *cls) {
+  return Particle.function(name, cloudFn, cls);
+}
+
 void setup() {
-  // setupLED();
-  // serialDebugSetup();
-
-  // serialDebugPrint(LOG_MODULE, "Setup()");
-
-  // String s = "0A";
-
-  // char buf[128];
-  // sprintf(buf, "value = %d;", val);
-  // Serial.println(buf);
-
-  // registerFunc("setLed", setLed);
-
-  pinMode(DEBUG_PIN_1, OUTPUT);
-  pinMode(DEBUG_PIN_2, OUTPUT);
-  pinResetFast(DEBUG_PIN_1);
-  // pinResetFast(DEBUG_PIN_2);
-
   dmx::setup();
 
   ledDriver = new LedStripDriver((led_strip_config_t*)&CONFIG_LED_STRIP);
   ledDriver->initState(&ledState);
 
-  ledDriver->pattern(Pattern::pulse)
-    ->period(1000)
-    ->dutyCycle(80)
+  //default pattern on power-up
+  ledDriver->pattern(Pattern::gradient)
     ->colourOn((Colour*)&COLOUR_ON)
     ->colourOff((Colour*)&COLOUR_OFF);
+
+  cloudFunctions = new CloudFunctions(ledDriver, &regFn);
 
   ledTimer.start();
 }
