@@ -53,9 +53,9 @@ protected:
   Direction mSnakeDirection;
   uint32_t mSnakeLength;
 
-  uint32_t mProgressInitial;
-  uint32_t mProgressFinal;
-  uint32_t mProgressIncrement;
+  uint8_t mProgressInitial;
+  uint8_t mProgressFinal;
+  uint8_t mProgressIncrement;
   uint32_t mProgressIncrementDelayMs;
   uint32_t mProgressResetDelayMs;
   Direction mProgressDirection;
@@ -79,7 +79,7 @@ public:
   LedStripDriver* dutyCycle(uint8_t value);
 
   /* Used by snake pattern to set length of snake in LEDs */
-  LedStripDriver* length(uint32_t numLeds);
+  LedStripDriver* length(uint8_t numLeds);
 
   /*
   * Used by snake pattern to set direction of snake
@@ -89,10 +89,10 @@ public:
   LedStripDriver* snakeDirection(Direction direction);
 
   /* Used by progress pattern to set inital progress value */
-  LedStripDriver* initialValue(uint32_t progress);
+  LedStripDriver* initialValue(uint8_t progress);
 
   /* Used by progress pattern to set number of LEDs per increment */
-  LedStripDriver* increment(uint32_t leds);
+  LedStripDriver* increment(uint8_t leds);
 
   /* Used by progress pattern to set number of ms between increments */
   LedStripDriver* incDelay(uint32_t delayMs);
@@ -101,7 +101,7 @@ public:
   LedStripDriver* resetDelay(uint32_t delayMs);
 
   /* Used by progress pattern to set maximum progress value */
-  LedStripDriver* finalValue(uint32_t progress);
+  LedStripDriver* finalValue(uint8_t progress);
 
   /*
   * Used by progress pattern to set direction of increment
@@ -109,6 +109,20 @@ public:
   *    reverse = last LED to first
   */
   LedStripDriver* progressDirection(Direction direction);
+
+  uint32_t getPeriod() { return mPeriodMs; };
+  Colour* getColourOn() { return mColourOn; };
+  Colour* getColourOff() { return mColourOff; };
+  Pattern getPattern() { return mPattern; };
+
+  uint8_t getDutyCycle() { return mDutyCycle; };
+
+  uint8_t getProgressInitial() { return mProgressInitial; };
+  uint8_t getProgressFinal() { return mProgressFinal; };
+  uint8_t getProgressIncrement() { return mProgressIncrement; };
+  uint32_t getProgressIncrementDelay() { return mProgressIncrementDelayMs; };
+  uint32_t getProgressResetDelay() { return mProgressResetDelayMs; };
+  Direction getProgressDirection() { return mProgressDirection; };
 };
 
 #endif

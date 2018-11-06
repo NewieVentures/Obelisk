@@ -57,3 +57,15 @@ TEST(ColourTestGroup, comparesValuesForEquality)
 
   CHECK_EQUAL(c1, c2);
 }
+
+TEST(ColourTestGroup, toStringReturnsCorrectResult)
+{
+  uint8_t red = 0xA5;
+  uint8_t green = 0x21;
+  uint8_t blue = 0;
+  String expected = String("#A52100");
+
+  Colour colour = Colour(red, green, blue);
+
+  STRCMP_EQUAL(expected, colour.toString());
+}

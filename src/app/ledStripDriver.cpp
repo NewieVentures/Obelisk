@@ -270,7 +270,7 @@ LedStripDriver* LedStripDriver::pattern(Pattern pattern) {
 };
 
 /* Used by snake pattern to set length of snake in LEDs */
-LedStripDriver* LedStripDriver::length(uint32_t numLeds) {
+LedStripDriver* LedStripDriver::length(uint8_t numLeds) {
   mSnakeLength = numLeds;
   return this;
 };
@@ -296,13 +296,13 @@ LedStripDriver* LedStripDriver::progressDirection(Direction direction) {
 };
 
 /* Used by progress pattern to set inital progress value */
-LedStripDriver* LedStripDriver::initialValue(uint32_t progress) {
+LedStripDriver* LedStripDriver::initialValue(uint8_t progress) {
   mProgressInitial = progress;
   return this;
 };
 
 /* Used by progress pattern to set number of LEDs per increment */
-LedStripDriver* LedStripDriver::increment(uint32_t leds) {
+LedStripDriver* LedStripDriver::increment(uint8_t leds) {
   mProgressIncrement = leds;
   return this;
 };
@@ -320,7 +320,7 @@ LedStripDriver* LedStripDriver::resetDelay(uint32_t delayMs) {
 };
 
 /* Used by progress pattern to set final progress value */
-LedStripDriver* LedStripDriver::finalValue(uint32_t progress) {
+LedStripDriver* LedStripDriver::finalValue(uint8_t progress) {
   mProgressFinal = progress;
   return this;
 };

@@ -1,6 +1,8 @@
 #include "colour.h"
 #include "utils.h"
 
+#define STR_LEN 7
+
 uint8_t hexColourStrValToInt(String hexStr) {
   return (uint8_t) hexStrToInt(hexStr);
 }
@@ -14,7 +16,7 @@ Colour::Colour(uint8_t red, uint8_t green, uint8_t blue) {
 
 //value = '#rrggbb'
 Colour::Colour(String value) {
-  if (value.charAt(0) != '#' || value.length() != 7) {
+  if (value.charAt(0) != '#' || value.length() != STR_LEN) {
     mIsValid = false;
   } else {
     const String &redStr = value.substring(1,3);
@@ -54,4 +56,12 @@ bool operator==(const Colour& lhs, const Colour& rhs) {
 
 bool operator!=(const Colour& lhs, const Colour& rhs) {
   return !(lhs == rhs);
+}
+
+String Colour::toString() {
+  char str[STR_LEN+1];
+
+  sprintf(str, "#%02X%02X%02X", mRed, mGreen, mBlue);
+
+  return String(str);
 }

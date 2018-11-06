@@ -14,6 +14,8 @@ public:
   uint8_t getGreen() const;
   uint8_t getBlue() const;
   bool isValid();
+
+  String toString();
 };
 
 bool operator==(const Colour& lhs, const Colour& rhs);

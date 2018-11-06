@@ -6,7 +6,7 @@ TEST_LIB := CppUTest CppUTestExt
 TEST_LIB_DIRS := /usr/local/lib
 TEST_DIR := test
 
-TEST_SRC := colour.cpp utils.cpp ledStripDriver.cpp argParser.cpp
+TEST_SRC := colour.cpp utils.cpp ledStripDriver.cpp argParser.cpp cloudFunctions.cpp
 
 CFLAGS := -g -std=c99 -Wall -Os -I$(TEST_DIR) -I$(APP_DIR)
 CXXFLAGS := -g -std=c++11 -Wall -Os -I$(TEST_DIR) -I$(APP_DIR)
@@ -29,7 +29,7 @@ OBJ += $(patsubst %.c,%.o, $(filter %.c,$(SRC)))
 TEST_OBJ := $(patsubst %.cpp,%.o, $(filter %.cpp,$(TEST_SRC)))
 TEST_OBJ += $(patsubst %.c,%.o, $(filter %.c,$(TEST_SRC)))
 
-all: $(OUTPUT_NAME) $(TEST_OUTPUT_NAME)
+all: $(TEST_OUTPUT_NAME)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $^
