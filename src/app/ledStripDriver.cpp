@@ -208,7 +208,8 @@ void LedStripDriver::handleGradientPattern(led_strip_state_t *state, uint8_t *va
 }
 
 void LedStripDriver::handleSnakePattern(led_strip_state_t *state, uint8_t *values) {
-  uint32_t incrementMs = mPeriodMs / (mConfig->numLeds + mSnakeLength);
+  const uint32_t PROGRESS_MAX = mConfig->numLeds + mSnakeLength;
+  const uint32_t INCREMENT_MS = mPeriodMs / (mConfig->numLeds + mSnakeLength);
   uint32_t start;
   uint32_t end;
 
@@ -216,34 +217,24 @@ void LedStripDriver::handleSnakePattern(led_strip_state_t *state, uint8_t *value
     start = mSnakeLength > state->progress ? 0 : state->progress - mSnakeLength;
     end = state->progress;
   } else {
-    if (state->progress < mConfig->numLeds) {
-      start = mConfig->numLeds - state->progress;
-      end = start + mSnakeLength;
-    } else {
-      start = 0;
-      end = mConfig->numLeds + mSnakeLength - state->progress;
-    }
-
+    end = PROGRESS_MAX - state->progress;
+    start = state->progress < mConfig->numLeds ? (end - mSnakeLength): 0;
   }
 
 
   for (uint8_t i=0; i < mConfig->numLeds; i++) {
-    if (i >= start && i < end) {
-      values[(i * COLOURS_PER_LED) + INDEX_RED] = mColourOn->getRed();
-      values[(i * COLOURS_PER_LED) + INDEX_GREEN] = mColourOn->getGreen();
-      values[(i * COLOURS_PER_LED) + INDEX_BLUE] = mColourOn->getBlue();
-    } else {
-      values[(i * COLOURS_PER_LED) + INDEX_RED] = mColourOff->getRed();
-      values[(i * COLOURS_PER_LED) + INDEX_GREEN] = mColourOff->getGreen();
-      values[(i * COLOURS_PER_LED) + INDEX_BLUE] = mColourOff->getBlue();
-    }
+    Colour *colour = (i >= start && i < end) ? mColourOn : mColourOff;
+
+    values[(i * COLOURS_PER_LED) + INDEX_RED] = colour->getRed();
+    values[(i * COLOURS_PER_LED) + INDEX_GREEN] = colour->getGreen();
+    values[(i * COLOURS_PER_LED) + INDEX_BLUE] = colour->getBlue();
   }
 
-  if (state->counter >= incrementMs) {
+  if (state->counter >= INCREMENT_MS) {
     state->progress += 1;
     state->counter = 0;
 
-    if (state->progress >= (mConfig->numLeds + mSnakeLength)) {
+    if (state->progress >= PROGRESS_MAX) {
       state->progress = 0;
     }
   }
