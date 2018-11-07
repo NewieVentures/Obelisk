@@ -124,6 +124,9 @@ public:
   uint32_t getProgressIncrementDelay() { return mProgressIncrementDelayMs; };
   uint32_t getProgressResetDelay() { return mProgressResetDelayMs; };
   Direction getProgressDirection() { return mProgressDirection; };
+
+  uint32_t getSnakeLength() { return mSnakeLength; };
+  Direction getSnakeDirection() { return mSnakeDirection; };
 };
 
 #endif

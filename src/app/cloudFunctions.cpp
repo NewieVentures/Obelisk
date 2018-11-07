@@ -10,10 +10,11 @@
 #define ARG_COUNT_STROBE 2
 #define ARG_COUNT_GRADIENT 2
 #define ARG_COUNT_PROGRESS 8
+#define ARG_COUNT_SNAKE 5
 
 const argParser::ArgInfo ARG_INFO_PERIOD_MS = {
   .type = ARG_TYPE_NUMBER,
-  .min = 100,
+  .min = 10,
   .max = 2147483647
 };
 
@@ -147,6 +148,15 @@ const argParser::ArgConfig ARG_CONFIG_PROGRESS = {
   .length = ARG_COUNT_PROGRESS,
 };
 
+const argParser::ArgConfig ARG_CONFIG_SNAKE = {
+  .info = ARGS_INFO_SNAKE,
+  .length = ARG_COUNT_SNAKE,
+};
+
+static Direction intToDirection(uint8_t value) {
+  return value == 0 ? Direction::forward : Direction::reverse;
+}
+
 CloudFunctions::CloudFunctions(LedStripDriver *ledDriver, int (*regFn)(String, int (CloudFunctions::*cloudFn)(String), CloudFunctions*)) {
   mLedDriver = ledDriver;
   mColourOn = new COLOUR_BLACK;
@@ -157,6 +167,7 @@ CloudFunctions::CloudFunctions(LedStripDriver *ledDriver, int (*regFn)(String, i
   regFn(String("strobe"), (&CloudFunctions::strobe), this);
   regFn(String("gradient"), (&CloudFunctions::gradient), this);
   regFn(String("progress"), (&CloudFunctions::progress), this);
+  regFn(String("snake"), (&CloudFunctions::snake), this);
 }
 
 CloudFunctions::~CloudFunctions() {
@@ -284,7 +295,35 @@ int CloudFunctions::progress(String args) {
       ->increment((uint8_t)increment)
       ->incDelay(incDelay)
       ->resetDelay(resetDelay)
-      ->progressDirection(direction == 0 ? Direction::forward : Direction::reverse)
+      ->progressDirection(intToDirection(direction))
+      ->colourOn(mColourOn)
+      ->colourOff(mColourOff);
+  }
+
+  return result;
+}
+
+int CloudFunctions::snake(String args) {
+  String parsedArgs[ARG_COUNT_SNAKE];
+  int32_t result = parseAndValidateArgs(parsedArgs, &ARG_CONFIG_SNAKE, args);
+  uint32_t period;
+  uint32_t direction;
+  uint32_t length;
+
+  if (result == 0) {
+    deleteColours();
+
+    strToInt(&period, parsedArgs[0]);
+    strToInt(&direction, parsedArgs[1]);
+    strToInt(&length, parsedArgs[2]);
+
+    mColourOn = new Colour(parsedArgs[3]);
+    mColourOff = new Colour(parsedArgs[4]);
+
+    mLedDriver->pattern(Pattern::snake)
+      ->period(period)
+      ->length(length)
+      ->snakeDirection(intToDirection(direction))
       ->colourOn(mColourOn)
       ->colourOff(mColourOff);
   }

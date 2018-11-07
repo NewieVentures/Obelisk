@@ -69,6 +69,11 @@ TEST(CloudFunctionsTestGroup, registersFunctions)
     .withParameter("fn", (void*)&CloudFunctions::progress)
     .withParameter("cls", cloudFunctions);
 
+  mock().expectOneCall("registerFunction")
+    .withParameter("name", "snake")
+    .withParameter("fn", (void*)&CloudFunctions::snake)
+    .withParameter("cls", cloudFunctions);
+
   cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
   delete cloudFunctions;
 }
@@ -260,6 +265,55 @@ TEST(CloudFunctionsTestGroup, progressPassesCorrectArgsToLedDriver)
   LONGS_EQUAL(INC_DELAY, ledStripDriver->getProgressIncrementDelay());
   LONGS_EQUAL(RESET_DELAY, ledStripDriver->getProgressResetDelay());
   CHECK(DIRECTION == ledStripDriver->getProgressDirection());
+  STRCMP_EQUAL(COLOUR_ON.toString(), ledStripDriver->getColourOn()->toString());
+  STRCMP_EQUAL(COLOUR_OFF.toString(), ledStripDriver->getColourOff()->toString());
+
+  delete cloudFunctions;
+}
+
+TEST(CloudFunctionsTestGroup, snakeReturnsSuccessForValidInput)
+{
+  cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
+
+  LONGS_EQUAL(argParser::RET_VAL_SUC,
+              cloudFunctions->snake("100,0,8,#FFFFFF,#000000"));
+
+  delete cloudFunctions;
+}
+
+TEST(CloudFunctionsTestGroup, snakeReturnsErrorForInvalidInput)
+{
+  cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
+
+  LONGS_EQUAL(argParser::RET_VAL_INVALID_ARG,
+              cloudFunctions->snake(",0,2,#FFFFFF,#000000"));
+
+  delete cloudFunctions;
+}
+
+TEST(CloudFunctionsTestGroup, snakePassesCorrectArgsToLedDriver)
+{
+  uint8_t PERIOD_MS = 1000;
+  uint8_t LENGTH = 5;
+  Direction DIRECTION = Direction::reverse;
+  Colour COLOUR_ON = Colour("#9823AF");
+  Colour COLOUR_OFF = Colour("#883322");
+  char args[ARGS_LEN_MAX];
+
+  sprintf(args, "%d,%d,%d,%s,%s",
+          PERIOD_MS,
+          DIRECTION == Direction::forward ? 0 : 1,
+          LENGTH,
+          COLOUR_ON.toString().c_str(),
+          COLOUR_OFF.toString().c_str());
+
+  cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
+  cloudFunctions->snake(args);
+
+  CHECK(Pattern::snake == ledStripDriver->getPattern());
+  LONGS_EQUAL(PERIOD_MS, ledStripDriver->getPeriod());
+  CHECK(DIRECTION == ledStripDriver->getSnakeDirection());
+  LONGS_EQUAL(LENGTH, ledStripDriver->getSnakeLength());
   STRCMP_EQUAL(COLOUR_ON.toString(), ledStripDriver->getColourOn()->toString());
   STRCMP_EQUAL(COLOUR_OFF.toString(), ledStripDriver->getColourOff()->toString());
 
