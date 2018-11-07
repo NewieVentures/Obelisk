@@ -41,6 +41,7 @@ private:
   void handleStrobePattern(led_strip_state_t *state, uint8_t *values);
   void handleProgressPattern(led_strip_state_t *state, uint8_t *values);
   void handleGradientPattern(led_strip_state_t *state, uint8_t *values);
+  void handleSnakePattern(led_strip_state_t *state, uint8_t *values);
 
 protected:
   uint32_t mPeriodMs;

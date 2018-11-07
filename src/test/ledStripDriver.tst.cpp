@@ -34,14 +34,24 @@ static const led_strip_config_t CONFIG_LEDS_3 = {
     .resolutionMs = 1,
 };
 
-static void verify_colours(const Colour *expected, uint8_t *values, uint32_t len) {
-    for (uint32_t i=0; i<len; i++) {
+static void verify_colours(Colour *expected,
+                           uint8_t *values,
+                           uint32_t len,
+                           uint32_t offset = 0) {
+    for (uint32_t i=offset; i<len; i++) {
       uint32_t index = i * 3;
-      CHECK_EQUAL(*expected, Colour(values[index+1], values[index+0], values[index+2]));
+      Colour actual = Colour(values[index+1], values[index+0], values[index+2]);
+      String message;
+
+      message = message.format("Incorrect colour at index %d, expected: %s, actual: %s ",
+                               len, expected->toString().c_str(), actual.toString().c_str());
+
+      CHECK_TEXT(*expected == actual,
+                 message);
     }
 }
 
-static void verify_colour(const Colour *expected, uint8_t *values) {
+static void verify_colour(Colour *expected, uint8_t *values) {
   verify_colours(expected, values, 1);
 }
 
@@ -112,7 +122,7 @@ TEST(LedStripDriverPulseTestGroup, writesOnValueForPulseWhenCounterLessThanOnTim
     };
     driver->onTimerFired(&state, values);
 
-    verify_colour(&COLOUR_ON, lastValuesWritten);
+    verify_colour((Colour*)&COLOUR_ON, lastValuesWritten);
 }
 
 TEST(LedStripDriverPulseTestGroup, writesOffValueForPulseWhenCounterGreaterThanOnTime)
@@ -128,7 +138,7 @@ TEST(LedStripDriverPulseTestGroup, writesOffValueForPulseWhenCounterGreaterThanO
     led_strip_state_t state = { .counter = 5 };
     driver->onTimerFired(&state, values);
 
-    verify_colour(&COLOUR_OFF, lastValuesWritten);
+    verify_colour((Colour*)&COLOUR_OFF, lastValuesWritten);
 }
 
 TEST(LedStripDriverPulseTestGroup, resetsCounterWhenEqualToPeriod)
@@ -166,7 +176,7 @@ TEST(LedStripDriverPulseTestGroup, writesOnValueForPulseWhenCounterEqualToPeriod
 
     driver->onTimerFired(&state, values);
 
-    verify_colour(&COLOUR_ON, lastValuesWritten);
+    verify_colour((Colour*)&COLOUR_ON, lastValuesWritten);
 }
 
 TEST(LedStripDriverPulseTestGroup, dutyCycleIncrementsByCorrectAmountAfterPeriod)
@@ -321,7 +331,7 @@ TEST(LedStripDriverPulseTestGroup, writesOnValueForAllLeds)
 
     drv.onTimerFired(&state, values);
 
-    verify_colours(&COLOUR_ON, lastValuesWritten, 3);
+    verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 3);
 }
 
 TEST(LedStripDriverPulseTestGroup, writesOffValueForAllLeds)
@@ -344,7 +354,7 @@ TEST(LedStripDriverPulseTestGroup, writesOffValueForAllLeds)
 
     drv.onTimerFired(&state, values);
 
-    verify_colours(&COLOUR_OFF, lastValuesWritten, 3);
+    verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 3);
 }
 
 /***********************************************************************************************
@@ -383,7 +393,7 @@ TEST(LedStripDriverBlinkTestGroup, writesOnValueForAllLedsWithCorrectColour)
 
     driver->onTimerFired(&state, values);
 
-    verify_colours(&COLOUR_ON, lastValuesWritten, 3);
+    verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 3);
 }
 
 TEST(LedStripDriverBlinkTestGroup, writesOffValueForAllLedsWithCorrectColourAfterPeriod)
@@ -402,7 +412,7 @@ TEST(LedStripDriverBlinkTestGroup, writesOffValueForAllLedsWithCorrectColourAfte
 
     driver->onTimerFired(&state, values);
 
-    verify_colours(&COLOUR_OFF, lastValuesWritten, 3);
+    verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 3);
 }
 
 TEST(LedStripDriverBlinkTestGroup, resetsCounterAfterPeriod)
@@ -457,7 +467,7 @@ TEST(LedStripDriverColourTestGroup, writesValueForAllLedsWithCorrectColour)
 
     driver->onTimerFired(&state, values);
 
-    verify_colours(&COLOUR, lastValuesWritten, 3);
+    verify_colours((Colour*)&COLOUR, lastValuesWritten, 3);
 }
 
 /***********************************************************************************************
@@ -496,7 +506,7 @@ TEST(LedStripDriverStrobeTestGroup, writesOnValueForAllLedsWithCorrectColour)
 
   driver->onTimerFired(&state, values);
 
-  verify_colours(&COLOUR_ON, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 3);
 }
 
 TEST(LedStripDriverStrobeTestGroup, writesOffValueForAllLedsWithCorrectColour)
@@ -516,7 +526,7 @@ TEST(LedStripDriverStrobeTestGroup, writesOffValueForAllLedsWithCorrectColour)
 
   driver->onTimerFired(&state, values);
 
-  verify_colours(&COLOUR_OFF, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 3);
 }
 
 TEST(LedStripDriverStrobeTestGroup, counterResetAfterPeriod)
@@ -575,8 +585,8 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectInitialValue)
 
   driver->onTimerFired(&state, values);
 
-  verify_colour(&COLOUR_ON, lastValuesWritten);
-  verify_colours(&COLOUR_OFF, &lastValuesWritten[3], 2);
+  verify_colour((Colour*)&COLOUR_ON, lastValuesWritten);
+  verify_colours((Colour*)&COLOUR_OFF, &lastValuesWritten[3], 2);
 }
 
 TEST(LedStripDriverProgressTestGroup, incrementsProgressValueAfterDelay)
@@ -632,8 +642,8 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectValueForForwardDirection)
 
   driver->onTimerFired(&state, values);
 
-  verify_colour(&COLOUR_ON, lastValuesWritten);
-  verify_colours(&COLOUR_OFF, &lastValuesWritten[PROGRESS * COLOURS_PER_LED], 1);
+  verify_colour((Colour*)&COLOUR_ON, lastValuesWritten);
+  verify_colours((Colour*)&COLOUR_OFF, &lastValuesWritten[PROGRESS * COLOURS_PER_LED], 1);
 }
 
 TEST(LedStripDriverProgressTestGroup, resetsProgressAfterFinalValueAndResetDelay)
@@ -707,8 +717,8 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectValueForReverseDirection)
 
   driver->onTimerFired(&state, values);
 
-  verify_colour(&COLOUR_OFF, lastValuesWritten);
-  verify_colours(&COLOUR_ON, &lastValuesWritten[COLOURS_PER_LED], 2);
+  verify_colour((Colour*)&COLOUR_OFF, lastValuesWritten);
+  verify_colours((Colour*)&COLOUR_ON, &lastValuesWritten[COLOURS_PER_LED], 2);
 }
 
 /***********************************************************************************************
@@ -747,7 +757,229 @@ TEST(LedStripDriverGradientTestGroup, writesCorrectValues)
 
   driver->onTimerFired(&state, values);
 
-  verify_colour(&COLOUR_START, lastValuesWritten);
-  verify_colour(&COLOUR_MID, &lastValuesWritten[COLOURS_PER_LED]);
-  verify_colour(&COLOUR_END, &lastValuesWritten[2 * COLOURS_PER_LED]);
+  verify_colour((Colour*)&COLOUR_START, lastValuesWritten);
+  verify_colour((Colour*)&COLOUR_MID, &lastValuesWritten[COLOURS_PER_LED]);
+  verify_colour((Colour*)&COLOUR_END, &lastValuesWritten[2 * COLOURS_PER_LED]);
+}
+
+/***********************************************************************************************
+ * Snake pattern
+ **********************************************************************************************/
+TEST_GROUP(LedStripDriverSnakeTestGroup)
+{
+    void setup() {
+        const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+
+        driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+        lastValuesWritten = new uint8_t[valuesLength];
+        memset(lastValuesWritten, 0, valuesLength);
+        memset(values, 0, valuesLength);
+    }
+
+    void teardown() {
+        delete driver;
+        delete[] lastValuesWritten;
+    }
+};
+
+TEST(LedStripDriverSnakeTestGroup, writesCorrectValuesForInitialState)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->length(2)
+    ->snakeDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .progress = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverSnakeTestGroup, incrementsProgressAtCorrectCounterValue)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(2)
+    ->snakeDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 200,
+    .progress = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(1, state.progress);
+}
+
+TEST(LedStripDriverSnakeTestGroup, doesNotIncrementProgressForEveryCounterValue)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(2)
+    ->snakeDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .progress = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(0, state.progress);
+}
+
+TEST(LedStripDriverSnakeTestGroup, resetsCounterAtCorrectValue)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(2)
+    ->snakeDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 200,
+    .progress = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(1, state.counter);
+}
+
+TEST(LedStripDriverSnakeTestGroup, writesCorrectValuesForForward)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(2)
+    ->snakeDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .progress = 2,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 2);
+  verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 1, 2);
+}
+
+TEST(LedStripDriverSnakeTestGroup, writesCorrectValuesForReverse)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(2)
+    ->snakeDirection(Direction::reverse)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .progress = 2,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 1);
+  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 2, 1);
+}
+
+TEST(LedStripDriverSnakeTestGroup, writesCorrectValuesWhenProgressLessThanLengthForward)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(4)
+    ->snakeDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .progress = 2,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 2);
+  verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 1, 2);
+}
+
+TEST(LedStripDriverSnakeTestGroup, writesCorrectValuesWhenProgressMoreThanNumLedsReverse)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(2)
+    ->snakeDirection(Direction::reverse)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .progress = 4,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 1);
+  verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 2, 1);
+}
+
+TEST(LedStripDriverSnakeTestGroup, resetsProgressAfterSnakeNoLongerVisible)
+{
+  const Colour& COLOUR_ON = COLOUR_RED;
+  const Colour& COLOUR_OFF = COLOUR_GREEN;
+  const uint32_t LENGTH = 2;
+
+  driver->pattern(Pattern::snake)
+    ->period(1000)
+    ->length(LENGTH)
+    ->snakeDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = 200,
+    .progress = CONFIG_LEDS_3.numLeds + LENGTH,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(0, state.progress);
 }

@@ -11,6 +11,10 @@ const Colour COLOUR_BLACK = Colour(0, 0, 0);
 #define DUTY_MAX 99
 #define DUTY_MIN 1
 
+#define INDEX_RED 1
+#define INDEX_GREEN 0
+#define INDEX_BLUE 2
+
 void LedStripDriver::initState(led_strip_state_t *state) {
   state->counter = 0;
   state->dutyCycle = 1;
@@ -157,10 +161,6 @@ void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *va
   }
 }
 
-#define INDEX_RED 1
-#define INDEX_GREEN 0
-#define INDEX_BLUE 2
-
 uint8_t calcGradientColourValue(int32_t gradient, int32_t offset, uint32_t step) {
   int32_t value = (gradient * (int32_t)step) + offset;
 
@@ -207,6 +207,48 @@ void LedStripDriver::handleGradientPattern(led_strip_state_t *state, uint8_t *va
   }
 }
 
+void LedStripDriver::handleSnakePattern(led_strip_state_t *state, uint8_t *values) {
+  uint32_t incrementMs = mPeriodMs / (mConfig->numLeds + mSnakeLength);
+  uint32_t start;
+  uint32_t end;
+
+  if (mSnakeDirection == forward) {
+    start = mSnakeLength > state->progress ? 0 : state->progress - mSnakeLength;
+    end = state->progress;
+  } else {
+    if (state->progress < mConfig->numLeds) {
+      start = mConfig->numLeds - state->progress;
+      end = start + mSnakeLength;
+    } else {
+      start = 0;
+      end = mConfig->numLeds + mSnakeLength - state->progress;
+    }
+
+  }
+
+
+  for (uint8_t i=0; i < mConfig->numLeds; i++) {
+    if (i >= start && i < end) {
+      values[(i * COLOURS_PER_LED) + INDEX_RED] = mColourOn->getRed();
+      values[(i * COLOURS_PER_LED) + INDEX_GREEN] = mColourOn->getGreen();
+      values[(i * COLOURS_PER_LED) + INDEX_BLUE] = mColourOn->getBlue();
+    } else {
+      values[(i * COLOURS_PER_LED) + INDEX_RED] = mColourOff->getRed();
+      values[(i * COLOURS_PER_LED) + INDEX_GREEN] = mColourOff->getGreen();
+      values[(i * COLOURS_PER_LED) + INDEX_BLUE] = mColourOff->getBlue();
+    }
+  }
+
+  if (state->counter >= incrementMs) {
+    state->progress += 1;
+    state->counter = 0;
+
+    if (state->progress >= (mConfig->numLeds + mSnakeLength)) {
+      state->progress = 0;
+    }
+  }
+}
+
 void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
   const uint32_t numLedValues = COLOURS_PER_LED * mConfig->numLeds;
 
@@ -231,8 +273,12 @@ void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
       handleProgressPattern(state, values);
       break;
 
-  case gradient:
+    case gradient:
       handleGradientPattern(state, values);
+      break;
+
+    case snake:
+      handleSnakePattern(state, values);
       break;
 
     default:
