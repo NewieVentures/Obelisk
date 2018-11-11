@@ -7,18 +7,16 @@
 #include "colours.h"
 #include "ledStripDriver.h"
 #include "cloudFunctions.h"
+#include "config.h"
 
 static const String LOG_MODULE = "MAIN";
 
-#define NUM_LEDS 18
-#define COLOURS_PER_LED 3
 static uint8_t ledValues[NUM_LEDS * COLOURS_PER_LED];
 
 static void updateLedsDmx(uint8_t *values, uint32_t length) {
   dmx::send(values, length);
 }
 
-static const uint32_t TIMER_RESOLUTION_MS = 5;
 static const led_strip_config_t CONFIG_LED_STRIP = {
     .numLeds = NUM_LEDS,
     .writeValueFn = updateLedsDmx,

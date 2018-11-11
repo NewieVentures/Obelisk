@@ -1,19 +1,15 @@
 #include "ledStripDriver.h"
 #include "colour.h"
+#include "colours.h"
+#include "config.h"
 
 const Colour COLOUR_DEFAULT = Colour(50, 0, 0);
-const Colour COLOUR_BLACK = Colour(0, 0, 0);
+const Colour COL_BLACK = COLOUR_BLACK;
 
-#define COLOURS_PER_LED 3
-#define PWM_DUTY_STEPS 10
 #define DUTY_DIR_INC 1
 #define DUTY_DIR_DEC -1
 #define DUTY_MAX 99
 #define DUTY_MIN 1
-
-#define INDEX_RED 1
-#define INDEX_GREEN 0
-#define INDEX_BLUE 2
 
 void LedStripDriver::initState(led_strip_state_t *state) {
   state->counter = 0;
@@ -25,7 +21,7 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mConfig = config;
   mPeriodMs = 1000;
   mColourOn = (Colour*)&COLOUR_DEFAULT;
-  mColourOff = (Colour*)&COLOUR_BLACK;
+  mColourOff = (Colour*)&COL_BLACK;
   mPattern = colour;
 
   mDutyCycle = 50;
@@ -48,9 +44,9 @@ inline void reverseDutyCycleDirection(led_strip_state_t *state) {
 void writeColourValues(uint8_t *values, uint32_t numLeds, Colour *colour) {
   for (uint32_t i=0; i<numLeds; i++) {
       uint32_t index = i*3;
-      values[index+0] = colour->getGreen();
-      values[index+1] = colour->getRed();
-      values[index+2] = colour->getBlue();
+      values[index+INDEX_RED] = colour->getRed();
+      values[index+INDEX_GREEN] = colour->getGreen();
+      values[index+INDEX_BLUE] = colour->getBlue();
     }
 }
 
@@ -176,8 +172,8 @@ uint8_t calcGradientColourValue(int32_t gradient, int32_t offset, uint32_t step)
 }
 
 void LedStripDriver::handleGradientPattern(led_strip_state_t *state, uint8_t *values) {
-  const uint32_t NUM_LEDS = mConfig->numLeds;
-  uint32_t steps = NUM_LEDS - 1;
+  const uint32_t num_leds = mConfig->numLeds;
+  const uint32_t steps = num_leds - 1;
   int32_t offsets[COLOURS_PER_LED];
   int32_t gradients[COLOURS_PER_LED];
 
@@ -190,11 +186,11 @@ void LedStripDriver::handleGradientPattern(led_strip_state_t *state, uint8_t *va
   gradients[INDEX_BLUE] = (mColourOff->getBlue() - offsets[INDEX_BLUE]) / steps;
 
   //ensure no rounding errors for end values
-  values[(NUM_LEDS - 1) * COLOURS_PER_LED + INDEX_RED] = mColourOff->getRed();
-  values[(NUM_LEDS - 1) * COLOURS_PER_LED + INDEX_GREEN] = mColourOff->getGreen();
-  values[(NUM_LEDS - 1) * COLOURS_PER_LED + INDEX_BLUE] = mColourOff->getBlue();
+  values[steps * COLOURS_PER_LED + INDEX_RED] = mColourOff->getRed();
+  values[steps * COLOURS_PER_LED + INDEX_GREEN] = mColourOff->getGreen();
+  values[steps * COLOURS_PER_LED + INDEX_BLUE] = mColourOff->getBlue();
 
-  for (uint32_t i=0; i < (NUM_LEDS - 1); i++) {
+  for (uint32_t i=0; i < steps; i++) {
     values[i * COLOURS_PER_LED + INDEX_RED] = calcGradientColourValue(gradients[INDEX_RED],
                                                                       offsets[INDEX_RED],
                                                                       i);

@@ -293,7 +293,7 @@ TEST(CloudFunctionsTestGroup, snakeReturnsErrorForInvalidInput)
 
 TEST(CloudFunctionsTestGroup, snakePassesCorrectArgsToLedDriver)
 {
-  uint8_t PERIOD_MS = 1000;
+  uint32_t PERIOD_MS = 1000;
   uint8_t LENGTH = 5;
   Direction DIRECTION = Direction::reverse;
   Colour COLOUR_ON = Colour("#9823AF");
