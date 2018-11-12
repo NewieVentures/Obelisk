@@ -1,69 +1,33 @@
 #include "Particle.h"
 
-#include "dmx.h"
-#include "led.h"
 #include "serialDebug.h"
-#include "colour.h"
-#include "colours.h"
-#include "ledStripDriver.h"
+#include "ledStrip.h"
 #include "cloudFunctions.h"
+#include "statusLed.h"
 #include "config.h"
+#include "events.h"
+#include "timers.h"
+
+//run user code on boot to drive status LED
+SYSTEM_MODE(SEMI_AUTOMATIC);
 
 static const String LOG_MODULE = "MAIN";
 
-static uint8_t ledValues[NUM_LEDS * COLOURS_PER_LED];
-
-static void updateLedsDmx(uint8_t *values, uint32_t length) {
-  dmx::send(values, length);
-}
-
-static const led_strip_config_t CONFIG_LED_STRIP = {
-    .numLeds = NUM_LEDS,
-    .writeValueFn = updateLedsDmx,
-    .resolutionMs = TIMER_RESOLUTION_MS,
-};
-
-static LedStripDriver *ledDriver;
-static led_strip_state_t ledState;
 static CloudFunctions *cloudFunctions;
-
-static void onLedTimerFired() {
-  ledDriver->onTimerFired(&ledState, ledValues);
-}
-
-const Colour& COLOUR_ON = COLOUR_RED;
-const Colour& COLOUR_OFF = COLOUR_BLUE;
-
-Timer ledTimer(TIMER_RESOLUTION_MS, onLedTimerFired);
-
-void registerFunc(String funcName, int32_t (*func)(String arg)) {
-  bool result = Particle.function(funcName, func);
-
-  if (!result) {
-    serialDebugPrint(LOG_MODULE, "Failed to register function " + funcName);
-  } else {
-    serialDebugPrint(LOG_MODULE, "Registered function " + funcName);
-  }
-}
 
 int regFn(String name, int (CloudFunctions::*cloudFn)(String arg), CloudFunctions *cls) {
   return Particle.function(name, cloudFn, cls);
 }
 
 void setup() {
-  dmx::setup();
+  statusLed::setup();
+  ledStrip::setup();
+  events::setup();
+  timers::setup();
 
-  ledDriver = new LedStripDriver((led_strip_config_t*)&CONFIG_LED_STRIP);
-  ledDriver->initState(&ledState);
+  cloudFunctions = new CloudFunctions(ledStrip::getDriver(), &regFn);
 
-  //default pattern on power-up
-  ledDriver->pattern(Pattern::gradient)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  cloudFunctions = new CloudFunctions(ledDriver, &regFn);
-
-  ledTimer.start();
+  Particle.connect();
 }
 
 /* Note: Code that blocks for too long (like more than 5 seconds), can make
