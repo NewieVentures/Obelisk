@@ -11,6 +11,8 @@ const Colour COL_BLACK = COLOUR_BLACK;
 #define DUTY_MAX 99
 #define DUTY_MIN 1
 
+uint8_t calcGradientColourValue(double gradient, double offset, uint32_t step);
+
 void LedStripDriver::initState(led_strip_state_t *state) {
   state->counter = 0;
   state->dutyCycle = 1;
@@ -63,34 +65,68 @@ void updateDutyCycle(led_strip_state_t *state, double increment, double decremen
 }
 
 void LedStripDriver::handlePulsePattern(led_strip_state_t *state, uint8_t *values) {
-  uint32_t pwmPeriod = mConfig->resolutionMs * PWM_DUTY_STEPS;
-  uint32_t onTimeMs = (uint32_t)((pwmPeriod * state->dutyCycle) / 100);
+  const uint32_t num_leds = mConfig->numLeds;
+  const uint32_t steps = (mPeriodMs / mConfig->resolutionMs) - 1;
+  uint32_t currentStep;
+  double offsets[COLOURS_PER_LED];
+  double gradients[COLOURS_PER_LED];
 
-  double dutyIncrement = calcDutyCycleIncrement(mDutyCycle, mPeriodMs, pwmPeriod);
-  double dutyDecrement = calcDutyCycleIncrement((100 - mDutyCycle), mPeriodMs, pwmPeriod);
+  uint8_t valueRed;
+  uint8_t valueGreen;
+  uint8_t valueBlue;
 
-  Colour *colour;
-
-  if (state->counter >= pwmPeriod) {
+  if (state->counter >= mPeriodMs) {
     state->counter = 0;
-    updateDutyCycle(state, dutyIncrement, dutyDecrement);
-
-    if (state->dutyCycle > DUTY_MAX) {
-      state->dutyCycle = DUTY_MAX;
-      reverseDutyCycleDirection(state);
-    } else if (state->dutyCycle < DUTY_MIN) {
-      state->dutyCycle = DUTY_MIN;
-      reverseDutyCycleDirection(state);
-    }
+    state->dutyDirection *= -1;
   }
 
-  if (state->counter < onTimeMs) {
-    colour = mColourOn;
+  currentStep = state->counter / mConfig->resolutionMs;
+
+  if (state->dutyDirection > 0) {
+    offsets[INDEX_RED] = mColourOn->getRed();
+    offsets[INDEX_GREEN] = mColourOn->getGreen();
+    offsets[INDEX_BLUE] = mColourOn->getBlue();
+
+    gradients[INDEX_RED] = (double)(mColourOff->getRed() - offsets[INDEX_RED]) / (double)steps;
+    gradients[INDEX_GREEN] = (double)(mColourOff->getGreen() - offsets[INDEX_GREEN]) / (double)steps;
+    gradients[INDEX_BLUE] = (double)(mColourOff->getBlue() - offsets[INDEX_BLUE]) / (double)steps;
   } else {
-    colour = mColourOff;
+    offsets[INDEX_RED] = mColourOff->getRed();
+    offsets[INDEX_GREEN] = mColourOff->getGreen();
+    offsets[INDEX_BLUE] = mColourOff->getBlue();
+
+    gradients[INDEX_RED] = (double)(mColourOn->getRed() - offsets[INDEX_RED]) / (double)steps;
+    gradients[INDEX_GREEN] = (double)(mColourOn->getGreen() - offsets[INDEX_GREEN]) / (double)steps;
+    gradients[INDEX_BLUE] = (double)(mColourOn->getBlue() - offsets[INDEX_BLUE]) / (double)steps;
   }
 
-  writeColourValues(values, mConfig->numLeds, colour);
+  if (state->counter >= (mPeriodMs-mConfig->resolutionMs)) {
+    if (state->dutyDirection > 0) {
+      valueRed = mColourOff->getRed();
+      valueGreen = mColourOff->getGreen();
+      valueBlue = mColourOff->getBlue();
+    } else {
+      valueRed = mColourOn->getRed();
+      valueGreen = mColourOn->getGreen();
+      valueBlue = mColourOn->getBlue();
+    }
+  } else {
+    valueRed = calcGradientColourValue(gradients[INDEX_RED],
+                                       offsets[INDEX_RED],
+                                       currentStep);
+    valueGreen = calcGradientColourValue(gradients[INDEX_GREEN],
+                                         offsets[INDEX_GREEN],
+                                         currentStep);
+    valueBlue = calcGradientColourValue(gradients[INDEX_BLUE],
+                                        offsets[INDEX_BLUE],
+                                        currentStep);
+  }
+
+  for (uint32_t i=0; i < num_leds; i++) {
+    values[i * COLOURS_PER_LED + INDEX_RED] = valueRed;
+    values[i * COLOURS_PER_LED + INDEX_GREEN] = valueGreen;
+    values[i * COLOURS_PER_LED + INDEX_BLUE] = valueBlue;
+  }
 }
 
 void LedStripDriver::handleBlinkPattern(led_strip_state_t *state, uint8_t *values) {
@@ -157,8 +193,8 @@ void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *va
   }
 }
 
-uint8_t calcGradientColourValue(int32_t gradient, int32_t offset, uint32_t step) {
-  int32_t value = (gradient * (int32_t)step) + offset;
+uint8_t calcGradientColourValue(double gradient, double offset, uint32_t step) {
+  int32_t value = (int32_t)((gradient * (int32_t)step) + offset);
 
   if (value < 0) {
     value = 0;

@@ -110,239 +110,126 @@ TEST_GROUP(LedStripDriverPulseTestGroup)
   }
 };
 
-TEST(LedStripDriverPulseTestGroup, writesOnValueForPulseWhenCounterLessThanOnTime)
+TEST(LedStripDriverPulseTestGroup, writesCorrectInitialValues)
 {
-  driver->pattern(Pattern::pulse)
-    ->period(10)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = 0,
-    .dutyCycle = 50,
-  };
-  driver->onTimerFired(&state, values);
-
-  verify_colour((Colour*)&COLOUR_ON, lastValuesWritten);
-}
-
-TEST(LedStripDriverPulseTestGroup, writesOffValueForPulseWhenCounterGreaterThanOnTime)
-{
-  driver->pattern(Pattern::pulse)
-    ->period(10)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = { .counter = 5 };
-  driver->onTimerFired(&state, values);
-
-  verify_colour((Colour*)&COLOUR_OFF, lastValuesWritten);
-}
-
-TEST(LedStripDriverPulseTestGroup, resetsCounterWhenEqualToPeriod)
-{
- const uint32_t PERIOD_MS = 10;
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
 
   driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = { .counter = PERIOD_MS };
-  driver->onTimerFired(&state, values);
-
-  CHECK(state.counter < PERIOD_MS);
-}
-
-TEST(LedStripDriverPulseTestGroup, writesOnValueForPulseWhenCounterEqualToPeriod)
-{
- const uint32_t PERIOD_MS = 10;
-
-  driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = PERIOD_MS,
-    .dutyCycle = 50,
-  };
-
-  driver->onTimerFired(&state, values);
-
-  verify_colour((Colour*)&COLOUR_ON, lastValuesWritten);
-}
-
-TEST(LedStripDriverPulseTestGroup, dutyCycleIncrementsByCorrectAmountAfterPeriod)
-{
- const uint32_t PERIOD_MS = 100;
-
-  driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(20)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = CONFIG_LEDS_1.resolutionMs * 10,
-    .dutyDirection = 1,
-    .dutyCycle = 1,
-  };
-
-  driver->onTimerFired(&state, values);
-
-  DOUBLES_EQUAL(51, state.dutyCycle, 0.01);
-}
-
-TEST(LedStripDriverPulseTestGroup, dutyCycleCappedAt99)
-{
- const uint32_t PERIOD_MS = 100;
-
-  driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = CONFIG_LEDS_1.resolutionMs * 10,
-    .dutyDirection = 1,
-    .dutyCycle = 98,
-  };
-
-  driver->onTimerFired(&state, values);
-
-  DOUBLES_EQUAL(99, state.dutyCycle, 0.01);
-}
-
-TEST(LedStripDriverPulseTestGroup, dutyCycleDirectionReversesAfterReachingMaximum)
-{
- const uint32_t PERIOD_MS = 100;
-
-  driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = CONFIG_LEDS_1.resolutionMs * 10,
-    .dutyDirection = 1,
-    .dutyCycle = 98,
-  };
-
-  driver->onTimerFired(&state, values);
-
-  CHECK_EQUAL(-1, state.dutyDirection);
-}
-
-TEST(LedStripDriverPulseTestGroup, dutyCycleDecrementsByCorrectAmountAfterPeriod)
-{
- const uint32_t PERIOD_MS = 100;
-
-  driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(20)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = CONFIG_LEDS_1.resolutionMs * 10,
-    .dutyDirection = -1,
-    .dutyCycle = 99,
-  };
-
-  driver->onTimerFired(&state, values);
-
-  DOUBLES_EQUAL(86.5, state.dutyCycle, 0.01);
-}
-
-TEST(LedStripDriverPulseTestGroup, dutyCycleMinLimitOf1)
-{
- const uint32_t PERIOD_MS = 100;
-
-  driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = CONFIG_LEDS_1.resolutionMs * 10,
-    .dutyDirection = -1,
-    .dutyCycle = 2,
-  };
-
-  driver->onTimerFired(&state, values);
-
-  DOUBLES_EQUAL(1, state.dutyCycle, 0.01);
-}
-
-TEST(LedStripDriverPulseTestGroup, dutyCycleDirectionReversesAfterReachingMinimum)
-{
- const uint32_t PERIOD_MS = 100;
-
-  driver->pattern(Pattern::pulse)
-    ->period(PERIOD_MS)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
-
-  led_strip_state_t state = {
-    .counter = CONFIG_LEDS_1.resolutionMs * 10,
-    .dutyDirection = -1,
-    .dutyCycle = 2,
-  };
-
-  driver->onTimerFired(&state, values);
-
-  CHECK_EQUAL(1, state.dutyDirection);
-}
-
-TEST(LedStripDriverPulseTestGroup, writesOnValueForAllLeds)
-{
-  LedStripDriver drv((led_strip_config_t*)&CONFIG_LEDS_3);
-
-  drv.pattern(Pattern::pulse)
-    ->period(100)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
+    ->period(3)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END);
 
   led_strip_state_t state = {
     .counter = 0,
     .dutyDirection = 1,
-    .dutyCycle = 50,
   };
 
-  drv.onTimerFired(&state, values);
+  driver->onTimerFired(&state, values);
 
-  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_START, lastValuesWritten, CONFIG_LEDS_3.numLeds);
 }
 
-TEST(LedStripDriverPulseTestGroup, writesOffValueForAllLeds)
+TEST(LedStripDriverPulseTestGroup, writesCorrectStepValues)
 {
-  LedStripDriver drv((led_strip_config_t*)&CONFIG_LEDS_3);
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour COLOUR_MID = Colour(127, 127, 0);
 
-  drv.pattern(Pattern::pulse)
-    ->period(100)
-    ->dutyCycle(50)
-    ->colourOn((Colour*)&COLOUR_ON)
-    ->colourOff((Colour*)&COLOUR_OFF);
+  driver->pattern(Pattern::pulse)
+    ->period(3000)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END);
 
   led_strip_state_t state = {
-    .counter = 5,
+    .counter = 1500,
     .dutyDirection = 1,
-    .dutyCycle = 50,
   };
 
-  drv.onTimerFired(&state, values);
+  driver->onTimerFired(&state, values);
 
-  verify_colours((Colour*)&COLOUR_OFF, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_MID, lastValuesWritten, CONFIG_LEDS_3.numLeds);
+}
+
+TEST(LedStripDriverPulseTestGroup, writesCorrectFinalValues)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::pulse)
+    ->period(3)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END);
+
+  led_strip_state_t state = {
+    .counter = 2,
+    .dutyDirection = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_END, lastValuesWritten, CONFIG_LEDS_3.numLeds);
+}
+
+TEST(LedStripDriverPulseTestGroup, resetsCounterAndReversesDirection)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::pulse)
+    ->period(3)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END);
+
+  led_strip_state_t state = {
+    .counter = 3,
+    .dutyDirection = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(1, state.counter);
+  LONGS_EQUAL(-1, state.dutyDirection);
+}
+
+TEST(LedStripDriverPulseTestGroup, writesCorrectValuesForReverseDirection)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::pulse)
+    ->period(3000)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .dutyDirection = -1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_END, lastValuesWritten, CONFIG_LEDS_3.numLeds);
+}
+
+TEST(LedStripDriverPulseTestGroup, writesCorrectValuesWhenDirectionReversed)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::pulse)
+    ->period(3000)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END);
+
+  led_strip_state_t state = {
+    .counter = 3000,
+    .dutyDirection = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_END, lastValuesWritten, CONFIG_LEDS_3.numLeds);
 }
 
 /***********************************************************************************************
