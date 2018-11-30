@@ -64,16 +64,30 @@ void updateDutyCycle(led_strip_state_t *state, double increment, double decremen
   }
 }
 
+void calculatePulseOffsets(double *offsets, Colour *startCol) {
+  offsets[INDEX_RED] = startCol->getRed();
+  offsets[INDEX_GREEN] = startCol->getGreen();
+  offsets[INDEX_BLUE] = startCol->getBlue();
+}
+
+void calculatePulseGradients(double *gradients,
+                             double *offsets,
+                             Colour *startCol,
+                             Colour *endCol,
+                             uint32_t steps) {
+  gradients[INDEX_RED] = (double)(endCol->getRed() - offsets[INDEX_RED]) / (double)steps;
+  gradients[INDEX_GREEN] = (double)(endCol->getGreen() - offsets[INDEX_GREEN]) / (double)steps;
+  gradients[INDEX_BLUE] = (double)(endCol->getBlue() - offsets[INDEX_BLUE]) / (double)steps;
+}
+
 void LedStripDriver::handlePulsePattern(led_strip_state_t *state, uint8_t *values) {
   const uint32_t num_leds = mConfig->numLeds;
   const uint32_t steps = (mPeriodMs / mConfig->resolutionMs) - 1;
   uint32_t currentStep;
   double offsets[COLOURS_PER_LED];
   double gradients[COLOURS_PER_LED];
-
-  uint8_t valueRed;
-  uint8_t valueGreen;
-  uint8_t valueBlue;
+  uint8_t valueRed, valueGreen, valueBlue;
+  Colour *startCol, *endCol;
 
   if (state->counter >= mPeriodMs) {
     state->counter = 0;
@@ -83,33 +97,20 @@ void LedStripDriver::handlePulsePattern(led_strip_state_t *state, uint8_t *value
   currentStep = state->counter / mConfig->resolutionMs;
 
   if (state->dutyDirection > 0) {
-    offsets[INDEX_RED] = mColourOn->getRed();
-    offsets[INDEX_GREEN] = mColourOn->getGreen();
-    offsets[INDEX_BLUE] = mColourOn->getBlue();
-
-    gradients[INDEX_RED] = (double)(mColourOff->getRed() - offsets[INDEX_RED]) / (double)steps;
-    gradients[INDEX_GREEN] = (double)(mColourOff->getGreen() - offsets[INDEX_GREEN]) / (double)steps;
-    gradients[INDEX_BLUE] = (double)(mColourOff->getBlue() - offsets[INDEX_BLUE]) / (double)steps;
+    startCol = mColourOn;
+    endCol = mColourOff;
   } else {
-    offsets[INDEX_RED] = mColourOff->getRed();
-    offsets[INDEX_GREEN] = mColourOff->getGreen();
-    offsets[INDEX_BLUE] = mColourOff->getBlue();
-
-    gradients[INDEX_RED] = (double)(mColourOn->getRed() - offsets[INDEX_RED]) / (double)steps;
-    gradients[INDEX_GREEN] = (double)(mColourOn->getGreen() - offsets[INDEX_GREEN]) / (double)steps;
-    gradients[INDEX_BLUE] = (double)(mColourOn->getBlue() - offsets[INDEX_BLUE]) / (double)steps;
+    startCol = mColourOff;
+    endCol = mColourOn;
   }
 
+  calculatePulseOffsets(offsets, startCol);
+  calculatePulseGradients(gradients, offsets, startCol, endCol, steps);
+
   if (state->counter >= (mPeriodMs-mConfig->resolutionMs)) {
-    if (state->dutyDirection > 0) {
-      valueRed = mColourOff->getRed();
-      valueGreen = mColourOff->getGreen();
-      valueBlue = mColourOff->getBlue();
-    } else {
-      valueRed = mColourOn->getRed();
-      valueGreen = mColourOn->getGreen();
-      valueBlue = mColourOn->getBlue();
-    }
+    valueRed = endCol->getRed();
+    valueGreen = endCol->getGreen();
+    valueBlue = endCol->getBlue();
   } else {
     valueRed = calcGradientColourValue(gradients[INDEX_RED],
                                        offsets[INDEX_RED],
