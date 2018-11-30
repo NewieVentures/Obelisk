@@ -22,6 +22,7 @@ class CloudFunctions {
   int strobe(String args);
   int gradient(String args);
   int progress(String args);
+  int pulse(String args);
   int snake(String args);
 };
 

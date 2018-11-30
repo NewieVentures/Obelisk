@@ -10,6 +10,7 @@
 #define ARG_COUNT_STROBE 2
 #define ARG_COUNT_GRADIENT 2
 #define ARG_COUNT_PROGRESS 8
+#define ARG_COUNT_PULSE 3
 #define ARG_COUNT_SNAKE 5
 
 const argParser::ArgInfo ARG_INFO_PERIOD_MS = {
@@ -83,7 +84,6 @@ const argParser::ArgInfo ARGS_INFO_STROBE[] = {
 
 const argParser::ArgInfo ARGS_INFO_PULSE[] = {
   ARG_INFO_PERIOD_MS,
-  ARG_INFO_DUTY_CYCLE,
   ARG_INFO_COLOUR,
   ARG_INFO_COLOUR
 };
@@ -148,6 +148,11 @@ const argParser::ArgConfig ARG_CONFIG_PROGRESS = {
   .length = ARG_COUNT_PROGRESS,
 };
 
+const argParser::ArgConfig ARG_CONFIG_PULSE = {
+  .info = ARGS_INFO_PULSE,
+  .length = ARG_COUNT_PULSE,
+};
+
 const argParser::ArgConfig ARG_CONFIG_SNAKE = {
   .info = ARGS_INFO_SNAKE,
   .length = ARG_COUNT_SNAKE,
@@ -167,6 +172,7 @@ CloudFunctions::CloudFunctions(LedStripDriver *ledDriver, int (*regFn)(String, i
   regFn(String("strobe"), (&CloudFunctions::strobe), this);
   regFn(String("gradient"), (&CloudFunctions::gradient), this);
   regFn(String("progress"), (&CloudFunctions::progress), this);
+  regFn(String("pulse"), (&CloudFunctions::pulse), this);
   regFn(String("snake"), (&CloudFunctions::snake), this);
 }
 
@@ -296,6 +302,28 @@ int CloudFunctions::progress(String args) {
       ->incDelay(incDelay)
       ->resetDelay(resetDelay)
       ->progressDirection(intToDirection(direction))
+      ->colourOn(mColourOn)
+      ->colourOff(mColourOff);
+  }
+
+  return result;
+}
+
+int CloudFunctions::pulse(String args) {
+  String parsedArgs[ARG_COUNT_PULSE];
+  int32_t result = parseAndValidateArgs(parsedArgs, &ARG_CONFIG_PULSE, args);
+  uint32_t period;
+
+  if (result == 0) {
+    deleteColours();
+
+    strToInt(&period, parsedArgs[0]);
+
+    mColourOn = new Colour(parsedArgs[1]);
+    mColourOff = new Colour(parsedArgs[2]);
+
+    mLedDriver->pattern(Pattern::pulse)
+      ->period(period)
       ->colourOn(mColourOn)
       ->colourOff(mColourOff);
   }

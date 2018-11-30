@@ -74,6 +74,11 @@ TEST(CloudFunctionsTestGroup, registersFunctions)
     .withParameter("fn", (void*)&CloudFunctions::snake)
     .withParameter("cls", cloudFunctions);
 
+  mock().expectOneCall("registerFunction")
+    .withParameter("name", "pulse")
+    .withParameter("fn", (void*)&CloudFunctions::pulse)
+    .withParameter("cls", cloudFunctions);
+
   cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
   delete cloudFunctions;
 }
@@ -314,6 +319,49 @@ TEST(CloudFunctionsTestGroup, snakePassesCorrectArgsToLedDriver)
   LONGS_EQUAL(PERIOD_MS, ledStripDriver->getPeriod());
   CHECK(DIRECTION == ledStripDriver->getSnakeDirection());
   LONGS_EQUAL(LENGTH, ledStripDriver->getSnakeLength());
+  STRCMP_EQUAL(COLOUR_ON.toString(), ledStripDriver->getColourOn()->toString());
+  STRCMP_EQUAL(COLOUR_OFF.toString(), ledStripDriver->getColourOff()->toString());
+
+  delete cloudFunctions;
+}
+
+TEST(CloudFunctionsTestGroup, pulseReturnsSuccessForValidInput)
+{
+  cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
+
+  LONGS_EQUAL(argParser::RET_VAL_SUC,
+              cloudFunctions->pulse("3000,#FFFFFF,#000000"));
+
+  delete cloudFunctions;
+}
+
+TEST(CloudFunctionsTestGroup, pulseReturnsErrorForInvalidInput)
+{
+  cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
+
+  LONGS_EQUAL(argParser::RET_VAL_INVALID_ARG,
+              cloudFunctions->pulse(",#FFFFFF,#000000"));
+
+  delete cloudFunctions;
+}
+
+TEST(CloudFunctionsTestGroup, pulsePassesCorrectArgsToLedDriver)
+{
+  uint32_t PERIOD_MS = 1000;
+  Colour COLOUR_ON = Colour("#9823AF");
+  Colour COLOUR_OFF = Colour("#883322");
+  char args[ARGS_LEN_MAX];
+
+  sprintf(args, "%d,%s,%s",
+          PERIOD_MS,
+          COLOUR_ON.toString().c_str(),
+          COLOUR_OFF.toString().c_str());
+
+  cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
+  cloudFunctions->pulse(args);
+
+  CHECK(Pattern::pulse == ledStripDriver->getPattern());
+  LONGS_EQUAL(PERIOD_MS, ledStripDriver->getPeriod());
   STRCMP_EQUAL(COLOUR_ON.toString(), ledStripDriver->getColourOn()->toString());
   STRCMP_EQUAL(COLOUR_OFF.toString(), ledStripDriver->getColourOff()->toString());
 
