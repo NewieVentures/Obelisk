@@ -597,6 +597,29 @@ TEST(LedStripDriverProgressTestGroup, allLedsOffIfFinalValueLessThanMaxLeds)
   verify_colours((Colour*)&COLOUR_OFF, &lastValuesWritten[0], 3);
 }
 
+TEST(LedStripDriverProgressTestGroup, incrementsByGivenAmount)
+{
+  const uint32_t INCREMENT = 2;
+  const uint32_t INCREMENT_DELAY = 100;
+
+  driver->pattern(Pattern::progress)
+    ->initialValue(0)
+    ->increment(INCREMENT)
+    ->incDelay(INCREMENT_DELAY)
+    ->progressDirection(Direction::forward)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = INCREMENT_DELAY,
+    .progress = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(INCREMENT, state.progress);
+}
+
 /***********************************************************************************************
  * Gradient pattern
  **********************************************************************************************/

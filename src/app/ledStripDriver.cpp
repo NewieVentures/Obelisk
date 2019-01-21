@@ -179,7 +179,7 @@ void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *va
       state->progress = 0;
     }
   } else if (state->counter >= mProgressIncrementDelayMs) {
-    state->progress += 1;
+    state->progress += mProgressIncrement;
     state->counter = 0;
   }
 
