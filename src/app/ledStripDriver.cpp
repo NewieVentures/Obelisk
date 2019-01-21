@@ -171,9 +171,9 @@ void LedStripDriver::handleStrobePattern(led_strip_state_t *state, uint8_t *valu
 void LedStripDriver::handleProgressPattern(led_strip_state_t *state, uint8_t *values) {
   uint32_t progressValue = mProgressInitial + state->progress;
   uint32_t ledsOn = (progressValue > mProgressFinal ? mProgressFinal : progressValue);
-  uint32_t ledsOff = mProgressFinal - ledsOn;
+  uint32_t ledsOff = mConfig->numLeds - ledsOn;
 
-  if (ledsOff == 0) {
+  if ((mProgressFinal - ledsOn) == 0) {
     if (state->counter >= (mProgressIncrementDelayMs + mProgressResetDelayMs)) {
       state->counter = 0;
       state->progress = 0;

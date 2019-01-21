@@ -486,7 +486,7 @@ TEST(LedStripDriverProgressTestGroup, resetsCounterAfterDelay)
 
 TEST(LedStripDriverProgressTestGroup, writesCorrectValueForForwardDirection)
 {
- const uint32_t PROGRESS = 2;
+  const uint32_t PROGRESS = 2;
 
   driver->pattern(Pattern::progress)
     ->initialValue(0)
@@ -507,7 +507,7 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectValueForForwardDirection)
 
 TEST(LedStripDriverProgressTestGroup, resetsProgressAfterFinalValueAndResetDelay)
 {
- const uint32_t FINAL = 2;
+  const uint32_t FINAL = 2;
   const uint32_t DELAY_MS = 10;
   const uint32_t RESET_DELAY_MS = 3;
 
@@ -530,7 +530,7 @@ TEST(LedStripDriverProgressTestGroup, resetsProgressAfterFinalValueAndResetDelay
 
 TEST(LedStripDriverProgressTestGroup, doesNotUpdateProgressAfterAllLedsOnButBeforeResetDelay)
 {
- const uint32_t INITIAL = 1;
+  const uint32_t INITIAL = 1;
   const uint32_t PROGRESS = CONFIG_LEDS_3.numLeds;
   const uint32_t DELAY_MS = 10;
   const uint32_t RESET_DELAY_MS = 3;
@@ -572,6 +572,29 @@ TEST(LedStripDriverProgressTestGroup, writesCorrectValueForReverseDirection)
 
   verify_colour((Colour*)&COLOUR_OFF, lastValuesWritten);
   verify_colours((Colour*)&COLOUR_ON, &lastValuesWritten[COLOURS_PER_LED], 2);
+}
+
+TEST(LedStripDriverProgressTestGroup, allLedsOffIfFinalValueLessThanMaxLeds)
+{
+  const uint32_t FINAL = 1;
+  const uint32_t DELAY_MS = 10;
+  const uint32_t RESET_DELAY_MS = 3;
+
+  driver->pattern(Pattern::progress)
+    ->finalValue(FINAL)
+    ->incDelay(DELAY_MS)
+    ->resetDelay(RESET_DELAY_MS)
+    ->colourOn((Colour*)&COLOUR_ON)
+    ->colourOff((Colour*)&COLOUR_OFF);
+
+  led_strip_state_t state = {
+    .counter = DELAY_MS + RESET_DELAY_MS,
+    .progress = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_OFF, &lastValuesWritten[0], 3);
 }
 
 /***********************************************************************************************
