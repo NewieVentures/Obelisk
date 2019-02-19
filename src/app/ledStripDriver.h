@@ -10,7 +10,8 @@ enum Pattern {
   progress,
   pulse,
   snake,
-  strobe
+  strobe,
+  weather,
 };
 
 enum Direction {
@@ -29,6 +30,7 @@ typedef struct {
   int32_t dutyDirection;
   double dutyCycle;
   uint32_t progress;
+  int8_t weatherTempFadeDirection;
 } led_strip_state_t;
 
 class LedStripDriver {
@@ -42,6 +44,7 @@ private:
   void handleProgressPattern(led_strip_state_t *state, uint8_t *values);
   void handleGradientPattern(led_strip_state_t *state, uint8_t *values);
   void handleSnakePattern(led_strip_state_t *state, uint8_t *values);
+  void handleWeatherPattern(led_strip_state_t *state, uint8_t *values);
 
 protected:
   uint32_t mPeriodMs;
@@ -60,6 +63,8 @@ protected:
   uint32_t mProgressIncrementDelayMs;
   uint32_t mProgressResetDelayMs;
   Direction mProgressDirection;
+
+  uint32_t mWeatherTempFadeIntervalSecs;
 
 public:
   void initState(led_strip_state_t *state);
@@ -103,6 +108,9 @@ public:
 
   /* Used by progress pattern to set maximum progress value */
   LedStripDriver* finalValue(uint8_t progress);
+
+  /* Used by weather pattern to set temperature fade interval (secs) */
+  LedStripDriver* tempFadeInterval(uint32_t progress);
 
   /*
   * Used by progress pattern to set direction of increment

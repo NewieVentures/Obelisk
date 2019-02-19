@@ -17,6 +17,7 @@ void LedStripDriver::initState(led_strip_state_t *state) {
   state->counter = 0;
   state->dutyCycle = 1;
   state->dutyDirection = DUTY_DIR_INC;
+  state->weatherTempFadeDirection = 1;
 }
 
 LedStripDriver::LedStripDriver(led_strip_config_t *config) {
@@ -37,6 +38,7 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mProgressIncrementDelayMs = 1000;
   mProgressResetDelayMs = 0;
   mProgressDirection = Direction::forward;
+  mWeatherTempFadeIntervalSecs = 4;
 };
 
 inline void reverseDutyCycleDirection(led_strip_state_t *state) {
@@ -273,6 +275,57 @@ void LedStripDriver::handleSnakePattern(led_strip_state_t *state, uint8_t *value
   }
 }
 
+void LedStripDriver::handleWeatherPattern(led_strip_state_t *state, uint8_t *values) {
+  const uint32_t num_leds = mConfig->numLeds;
+  const uint32_t steps = (mWeatherTempFadeIntervalSecs * 1000)/mConfig->resolutionMs - 1;
+  uint32_t currentStep = state->counter / mConfig->resolutionMs;
+  uint8_t redVal, greenVal, blueVal;
+  Colour *colourStart, *colourEnd;
+
+  int32_t offsets[COLOURS_PER_LED];
+  double gradients[COLOURS_PER_LED];
+
+  if (currentStep >= steps) {
+    state->counter = 0;
+    state->weatherTempFadeDirection *= -1;
+
+    currentStep = 0;
+  }
+
+  if (state->weatherTempFadeDirection > 0) {
+    colourStart = mColourOn;
+    colourEnd = mColourOff;
+  } else {
+    colourStart = mColourOff; //reverse colours
+    colourEnd = mColourOn;
+  }
+
+  offsets[INDEX_RED] = colourStart->getRed();
+  offsets[INDEX_GREEN] = colourStart->getGreen();
+  offsets[INDEX_BLUE] = colourStart->getBlue();
+
+  gradients[INDEX_RED] = (colourEnd->getRed() - offsets[INDEX_RED]) / (double)steps;
+  gradients[INDEX_GREEN] = (colourEnd->getGreen() - offsets[INDEX_GREEN]) / (double)steps;
+  gradients[INDEX_BLUE] = (colourEnd->getBlue() - offsets[INDEX_BLUE]) / (double)steps;
+
+  if (currentStep >= (steps - 1)) {
+    //ensure no rounding errors for end value
+    redVal = colourEnd->getRed();
+    greenVal = colourEnd->getGreen();
+    blueVal = colourEnd->getBlue();
+  } else {
+    redVal = calcGradientColourValue(gradients[INDEX_RED], offsets[INDEX_RED], currentStep);
+    greenVal = calcGradientColourValue(gradients[INDEX_GREEN], offsets[INDEX_GREEN], currentStep);
+    blueVal = calcGradientColourValue(gradients[INDEX_BLUE], offsets[INDEX_BLUE], currentStep);
+  }
+
+  for (uint32_t i=0; i < num_leds; i++) {
+    values[i * COLOURS_PER_LED + INDEX_RED] = redVal;
+    values[i * COLOURS_PER_LED + INDEX_GREEN] = greenVal;
+    values[i * COLOURS_PER_LED + INDEX_BLUE] = blueVal;
+  }
+}
+
 void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
   const uint32_t numLedValues = COLOURS_PER_LED * mConfig->numLeds;
 
@@ -303,6 +356,10 @@ void LedStripDriver::onTimerFired(led_strip_state_t *state, uint8_t *values) {
 
     case snake:
       handleSnakePattern(state, values);
+      break;
+
+    case weather:
+      handleWeatherPattern(state, values);
       break;
 
     default:
@@ -392,5 +449,11 @@ LedStripDriver* LedStripDriver::resetDelay(uint32_t delayMs) {
 /* Used by progress pattern to set final progress value */
 LedStripDriver* LedStripDriver::finalValue(uint8_t progress) {
   mProgressFinal = progress;
+  return this;
+};
+
+/* Used by weather pattern to set temperature fade interval (secs) */\
+LedStripDriver* LedStripDriver::tempFadeInterval(uint32_t intervalSecs) {
+  mWeatherTempFadeIntervalSecs = intervalSecs;
   return this;
 };

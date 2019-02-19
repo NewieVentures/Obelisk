@@ -856,3 +856,144 @@ TEST(LedStripDriverSnakeTestGroup, resetsProgressAfterSnakeNoLongerVisible)
 
   LONGS_EQUAL(0, state.progress);
 }
+
+/***********************************************************************************************
+ * Weather pattern
+ **********************************************************************************************/
+TEST_GROUP(LedStripDriverWeatherTestGroup)
+{
+  void setup() {
+    const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+
+    driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+    lastValuesWritten = new uint8_t[valuesLength];
+    memset(lastValuesWritten, 0, valuesLength);
+    memset(values, 0, valuesLength);
+  }
+
+  void teardown() {
+    delete driver;
+    delete[] lastValuesWritten;
+  }
+};
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectInitialValuesForTemperatureLayerForwardDirection)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval((uint32_t)4);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectMidValuesForTemperatureLayerForwardDirection)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_MID = Colour(127, 127, 0);
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval((uint32_t)4);
+
+  led_strip_state_t state = {
+    .counter = 2000,
+    .weatherTempFadeDirection = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_MID, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectEndValuesForTemperatureLayerForwardDirection)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval((uint32_t)4);
+
+  led_strip_state_t state = {
+    .counter = 4000 - CONFIG_LEDS_3.resolutionMs,
+    .weatherTempFadeDirection = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_END, lastValuesWritten, 3);
+}
+
+TEST(LedStripDriverWeatherTestGroup, resetsCounter)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval((uint32_t)4);
+
+  led_strip_state_t state = {
+    .counter = 4000,
+    .weatherTempFadeDirection = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(1, state.counter);
+}
+
+TEST(LedStripDriverWeatherTestGroup, changesFadeDirectionWhenCounterReset)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval((uint32_t)4);
+
+  led_strip_state_t state = {
+    .counter = 4000,
+    .weatherTempFadeDirection = -1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(1, state.weatherTempFadeDirection);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForEndTemperatureLayerBackwardDirection)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval((uint32_t)4);
+
+  led_strip_state_t state = {
+    .counter = 4000,
+    .weatherTempFadeDirection = -1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_START, lastValuesWritten, 3);
+}
