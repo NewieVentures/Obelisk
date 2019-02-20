@@ -5,6 +5,7 @@
 
 const Colour COLOUR_DEFAULT = Colour(50, 0, 0);
 const Colour COL_BLACK = COLOUR_BLACK;
+const Colour COL_WHITE = COLOUR_WHITE;
 
 #define DUTY_DIR_INC 1
 #define DUTY_DIR_DEC -1
@@ -18,6 +19,8 @@ void LedStripDriver::initState(led_strip_state_t *state) {
   state->dutyCycle = 1;
   state->dutyDirection = DUTY_DIR_INC;
   state->weatherTempFadeDirection = 1;
+  state->weatherRainCounter = 0;
+  state->weatherRainPosition = 0;
 }
 
 LedStripDriver::LedStripDriver(led_strip_config_t *config) {
@@ -38,7 +41,17 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mProgressIncrementDelayMs = 1000;
   mProgressResetDelayMs = 0;
   mProgressDirection = Direction::forward;
+
   mWeatherTempFadeIntervalSecs = 4;
+  mWeatherRainBandHeightLeds = 0; // no rain by default
+  mWeatherRainBandIncDelayMs = 0;
+  mWeatherRainBandSpacingLeds = 0;
+  mWeatherRainBandColour = (Colour*)&COL_WHITE;
+
+  mWeatherWarningColour = (Colour*)&COL_WHITE;
+  mWeatherWarningFadeInMs = 0;
+  mWeatherWarningFadeOutMs = 0;
+  mWeatherWarningOffDwellMs = 0;
 };
 
 inline void reverseDutyCycleDirection(led_strip_state_t *state) {
@@ -277,7 +290,7 @@ void LedStripDriver::handleSnakePattern(led_strip_state_t *state, uint8_t *value
 
 void LedStripDriver::handleWeatherPattern(led_strip_state_t *state, uint8_t *values) {
   const uint32_t num_leds = mConfig->numLeds;
-  const uint32_t steps = (mWeatherTempFadeIntervalSecs * 1000)/mConfig->resolutionMs - 1;
+  uint32_t steps = ((mWeatherTempFadeIntervalSecs * 1000) / mConfig->resolutionMs) - 1;
   uint32_t currentStep = state->counter / mConfig->resolutionMs;
   uint8_t redVal, greenVal, blueVal;
   Colour *colourStart, *colourEnd;
@@ -323,6 +336,112 @@ void LedStripDriver::handleWeatherPattern(led_strip_state_t *state, uint8_t *val
     values[i * COLOURS_PER_LED + INDEX_RED] = redVal;
     values[i * COLOURS_PER_LED + INDEX_GREEN] = greenVal;
     values[i * COLOURS_PER_LED + INDEX_BLUE] = blueVal;
+  }
+
+  // add rain bands
+  state->weatherRainCounter += mConfig->resolutionMs;
+  if (state->weatherRainCounter >= mWeatherRainBandIncDelayMs) {
+    state->weatherRainCounter = 0;
+    state->weatherRainPosition += 1;
+
+    if (state->weatherRainPosition >= mConfig->numLeds) {
+      state->weatherRainPosition = 0;
+    }
+  }
+
+  if (mWeatherRainBandHeightLeds > 0) {
+    //get initial position with bands wrapping around
+    uint32_t bandAndSpacingHeight = mWeatherRainBandHeightLeds + mWeatherRainBandSpacingLeds;
+    uint32_t rainInitialPosition = state->weatherRainPosition % bandAndSpacingHeight;
+
+    for (uint32_t i = rainInitialPosition; i < num_leds; i += bandAndSpacingHeight) {
+      for (uint32_t j = 0; j < mWeatherRainBandHeightLeds; j++) {
+        values[(i+j) * COLOURS_PER_LED + INDEX_RED] = mWeatherRainBandColour->getRed();
+        values[(i+j) * COLOURS_PER_LED + INDEX_GREEN] = mWeatherRainBandColour->getGreen();
+        values[(i+j) * COLOURS_PER_LED + INDEX_BLUE] = mWeatherRainBandColour->getBlue();
+      }
+    }
+  }
+
+  state->weatherWarningCounter += mConfig->resolutionMs;
+
+  switch(state->weatherWarningFadeState) {
+    case fadeIn:
+      if (state->weatherWarningCounter >= mWeatherWarningFadeInMs) {
+        state->weatherWarningCounter = 0;
+        state->weatherWarningFadeState = fadeOut;
+      }
+      break;
+
+    case fadeOut:
+      if (state->weatherWarningCounter >= mWeatherWarningFadeOutMs) {
+        state->weatherWarningCounter = 0;
+        state->weatherWarningFadeState = offDwell;
+      }
+      break;
+
+    case offDwell:
+      if (state->weatherWarningCounter >= mWeatherWarningOffDwellMs) {
+        state->weatherWarningCounter = 0;
+        state->weatherWarningFadeState = fadeIn;
+      }
+      break;
+  }
+
+  // weather warning
+  if (mWeatherWarningFadeInMs > 0) {
+    Colour warningColourStart = COLOUR_BLACK;
+
+    if (state->weatherWarningFadeState == fadeIn) {
+      steps = mWeatherWarningFadeInMs / mConfig->resolutionMs;
+      currentStep = state->weatherWarningCounter / mConfig->resolutionMs;
+
+      offsets[INDEX_RED] = warningColourStart.getRed();
+      offsets[INDEX_GREEN] = warningColourStart.getGreen();
+      offsets[INDEX_BLUE] = warningColourStart.getBlue();
+
+      gradients[INDEX_RED] = (mWeatherWarningColour->getRed() - offsets[INDEX_RED]) / (double)steps;
+      gradients[INDEX_GREEN] = (mWeatherWarningColour->getGreen() - offsets[INDEX_GREEN]) / (double)steps;
+      gradients[INDEX_BLUE] = (mWeatherWarningColour->getBlue() - offsets[INDEX_BLUE]) / (double)steps;
+
+      redVal = calcGradientColourValue(gradients[INDEX_RED], offsets[INDEX_RED], currentStep);
+      greenVal = calcGradientColourValue(gradients[INDEX_GREEN], offsets[INDEX_GREEN], currentStep);
+      blueVal = calcGradientColourValue(gradients[INDEX_BLUE], offsets[INDEX_BLUE], currentStep);
+    } else if (state->weatherWarningFadeState == fadeOut) {
+      steps = mWeatherWarningFadeOutMs / mConfig->resolutionMs;
+      currentStep = state->weatherWarningCounter / mConfig->resolutionMs;
+
+      offsets[INDEX_RED] = mWeatherWarningColour->getRed();
+      offsets[INDEX_GREEN] = mWeatherWarningColour->getGreen();
+      offsets[INDEX_BLUE] = mWeatherWarningColour->getBlue();
+
+      gradients[INDEX_RED] = (warningColourStart.getRed() - offsets[INDEX_RED]) / (double)steps;
+      gradients[INDEX_GREEN] = (warningColourStart.getGreen() - offsets[INDEX_GREEN]) / (double)steps;
+      gradients[INDEX_BLUE] = (warningColourStart.getBlue() - offsets[INDEX_BLUE]) / (double)steps;
+
+      redVal = calcGradientColourValue(gradients[INDEX_RED], offsets[INDEX_RED], currentStep);
+      greenVal = calcGradientColourValue(gradients[INDEX_GREEN], offsets[INDEX_GREEN], currentStep);
+      blueVal = calcGradientColourValue(gradients[INDEX_BLUE], offsets[INDEX_BLUE], currentStep);
+    } else {
+      redVal = warningColourStart.getRed();
+      greenVal = warningColourStart.getGreen();
+      blueVal = warningColourStart.getBlue();
+    }
+
+    if (currentStep == (steps - 1)) {
+      redVal = mWeatherWarningColour->getRed();
+      greenVal = mWeatherWarningColour->getGreen();
+      blueVal = mWeatherWarningColour->getBlue();
+    }
+
+    //black is transparent for the warning layer
+    if ((redVal | greenVal | blueVal) > 0) {
+      for (uint32_t i=0; i < num_leds; i++) {
+        values[i * COLOURS_PER_LED + INDEX_RED] = redVal;
+        values[i * COLOURS_PER_LED + INDEX_GREEN] = greenVal;
+        values[i * COLOURS_PER_LED + INDEX_BLUE] = blueVal;
+      }
+    }
   }
 }
 
@@ -452,8 +571,53 @@ LedStripDriver* LedStripDriver::finalValue(uint8_t progress) {
   return this;
 };
 
-/* Used by weather pattern to set temperature fade interval (secs) */\
+/* Used by weather pattern to set temperature fade interval (secs) */
 LedStripDriver* LedStripDriver::tempFadeInterval(uint32_t intervalSecs) {
   mWeatherTempFadeIntervalSecs = intervalSecs;
   return this;
 };
+
+/* Used by weather pattern to set rain band height */
+LedStripDriver* LedStripDriver::rainBandHeight(uint8_t leds) {
+  mWeatherRainBandHeightLeds = leds;
+  return this;
+}
+
+/* Used by weather pattern to set the delay between band movements */
+LedStripDriver* LedStripDriver::rainBandIncrementDelay(uint32_t delayMs) {
+  mWeatherRainBandIncDelayMs = delayMs;
+  return this;
+}
+
+/* Used by weather pattern to set rain band spacing (# leds apart) */
+LedStripDriver* LedStripDriver::rainBandSpacing(uint8_t leds) {
+  mWeatherRainBandSpacingLeds = leds;
+  return this;
+}
+
+/* Used by weather pattern to set rain band colour */
+LedStripDriver* LedStripDriver::rainBandColour(Colour *colour) {
+  mWeatherRainBandColour = colour;
+  return this;
+}
+
+/* Used by weather pattern to set weather warning colour */
+LedStripDriver* LedStripDriver::warningColour(Colour *colour) {
+  mWeatherWarningColour = colour;
+  return this;
+}
+/* Used by weather pattern to set weather warning fade in time (ms) */
+LedStripDriver* LedStripDriver::warningFadeIn(uint32_t fadeTimeMs) {
+  mWeatherWarningFadeInMs = fadeTimeMs;
+  return this;
+}
+/* Used by weather pattern to set weather warning fade in time (ms) */
+LedStripDriver* LedStripDriver::warningFadeOut(uint32_t fadeTimeMs) {
+  mWeatherWarningFadeOutMs = fadeTimeMs;
+  return this;
+}
+/* Used by weather pattern to set weather warning off dwell time (ms) */
+LedStripDriver* LedStripDriver::warningOffDwell(uint32_t offDwellMs) {
+  mWeatherWarningOffDwellMs = offDwellMs;
+  return this;
+}

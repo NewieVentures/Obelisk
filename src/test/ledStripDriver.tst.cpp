@@ -34,6 +34,14 @@ static const led_strip_config_t CONFIG_LEDS_3 = {
   .resolutionMs = 1,
 };
 
+static const led_strip_config_t CONFIG_LEDS_6 = {
+  .numLeds = 6,
+  .writeValueFn = writeValueStub,
+  .resolutionMs = 1,
+};
+
+#define WEATHER_TEST_LED_CONFIG CONFIG_LEDS_6
+
 static void verify_colours(Colour *expected,
                            uint8_t *values,
                            uint32_t len,
@@ -863,9 +871,9 @@ TEST(LedStripDriverSnakeTestGroup, resetsProgressAfterSnakeNoLongerVisible)
 TEST_GROUP(LedStripDriverWeatherTestGroup)
 {
   void setup() {
-    const uint32_t valuesLength = MAX_LEDS * COLOURS_PER_LED;
+    const uint32_t valuesLength = WEATHER_TEST_LED_CONFIG.numLeds * COLOURS_PER_LED;
 
-    driver = new LedStripDriver((led_strip_config_t*)&CONFIG_LEDS_3);
+    driver = new LedStripDriver((led_strip_config_t*)&WEATHER_TEST_LED_CONFIG);
     lastValuesWritten = new uint8_t[valuesLength];
     memset(lastValuesWritten, 0, valuesLength);
     memset(values, 0, valuesLength);
@@ -881,11 +889,12 @@ TEST(LedStripDriverWeatherTestGroup, writesCorrectInitialValuesForTemperatureLay
 {
   const Colour& COLOUR_START = COLOUR_RED;
   const Colour& COLOUR_END = COLOUR_GREEN;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
 
   driver->pattern(Pattern::weather)
     ->colourOn((Colour*)&COLOUR_START)
     ->colourOff((Colour*)&COLOUR_END)
-    ->tempFadeInterval((uint32_t)4);
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS);
 
   led_strip_state_t state = {
     .counter = 0,
@@ -894,7 +903,7 @@ TEST(LedStripDriverWeatherTestGroup, writesCorrectInitialValuesForTemperatureLay
 
   driver->onTimerFired(&state, values);
 
-  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_ON, lastValuesWritten, WEATHER_TEST_LED_CONFIG.numLeds);
 }
 
 TEST(LedStripDriverWeatherTestGroup, writesCorrectMidValuesForTemperatureLayerForwardDirection)
@@ -902,54 +911,57 @@ TEST(LedStripDriverWeatherTestGroup, writesCorrectMidValuesForTemperatureLayerFo
   const Colour& COLOUR_START = COLOUR_RED;
   const Colour& COLOUR_END = COLOUR_GREEN;
   const Colour& COLOUR_MID = Colour(127, 127, 0);
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
 
   driver->pattern(Pattern::weather)
     ->colourOn((Colour*)&COLOUR_START)
     ->colourOff((Colour*)&COLOUR_END)
-    ->tempFadeInterval((uint32_t)4);
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS);
 
   led_strip_state_t state = {
-    .counter = 2000,
+    .counter = (TEMPERATURE_FADE_INTERVAL_SECS * 1000) / 2,
     .weatherTempFadeDirection = 1,
   };
 
   driver->onTimerFired(&state, values);
 
-  verify_colours((Colour*)&COLOUR_MID, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_MID, lastValuesWritten, WEATHER_TEST_LED_CONFIG.numLeds);
 }
 
 TEST(LedStripDriverWeatherTestGroup, writesCorrectEndValuesForTemperatureLayerForwardDirection)
 {
   const Colour& COLOUR_START = COLOUR_RED;
   const Colour& COLOUR_END = COLOUR_GREEN;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
 
   driver->pattern(Pattern::weather)
     ->colourOn((Colour*)&COLOUR_START)
     ->colourOff((Colour*)&COLOUR_END)
-    ->tempFadeInterval((uint32_t)4);
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS);
 
   led_strip_state_t state = {
-    .counter = 4000 - CONFIG_LEDS_3.resolutionMs,
+    .counter = (TEMPERATURE_FADE_INTERVAL_SECS * 1000) - WEATHER_TEST_LED_CONFIG.resolutionMs,
     .weatherTempFadeDirection = 1,
   };
 
   driver->onTimerFired(&state, values);
 
-  verify_colours((Colour*)&COLOUR_END, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_END, lastValuesWritten, WEATHER_TEST_LED_CONFIG.numLeds);
 }
 
 TEST(LedStripDriverWeatherTestGroup, resetsCounter)
 {
   const Colour& COLOUR_START = COLOUR_RED;
   const Colour& COLOUR_END = COLOUR_GREEN;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
 
   driver->pattern(Pattern::weather)
     ->colourOn((Colour*)&COLOUR_START)
     ->colourOff((Colour*)&COLOUR_END)
-    ->tempFadeInterval((uint32_t)4);
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS);
 
   led_strip_state_t state = {
-    .counter = 4000,
+    .counter = (TEMPERATURE_FADE_INTERVAL_SECS * 1000),
     .weatherTempFadeDirection = 1,
   };
 
@@ -962,14 +974,15 @@ TEST(LedStripDriverWeatherTestGroup, changesFadeDirectionWhenCounterReset)
 {
   const Colour& COLOUR_START = COLOUR_RED;
   const Colour& COLOUR_END = COLOUR_GREEN;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
 
   driver->pattern(Pattern::weather)
     ->colourOn((Colour*)&COLOUR_START)
     ->colourOff((Colour*)&COLOUR_END)
-    ->tempFadeInterval((uint32_t)4);
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS);
 
   led_strip_state_t state = {
-    .counter = 4000,
+    .counter = (TEMPERATURE_FADE_INTERVAL_SECS * 1000),
     .weatherTempFadeDirection = -1,
   };
 
@@ -982,18 +995,672 @@ TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForEndTemperatureLayerBa
 {
   const Colour& COLOUR_START = COLOUR_RED;
   const Colour& COLOUR_END = COLOUR_GREEN;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
 
   driver->pattern(Pattern::weather)
     ->colourOn((Colour*)&COLOUR_START)
     ->colourOff((Colour*)&COLOUR_END)
-    ->tempFadeInterval((uint32_t)4);
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS);
 
   led_strip_state_t state = {
-    .counter = 4000,
+    .counter = (TEMPERATURE_FADE_INTERVAL_SECS * 1000),
     .weatherTempFadeDirection = -1,
   };
 
   driver->onTimerFired(&state, values);
 
-  verify_colours((Colour*)&COLOUR_START, lastValuesWritten, 3);
+  verify_colours((Colour*)&COLOUR_START, lastValuesWritten, WEATHER_TEST_LED_CONFIG.numLeds);
 }
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForInitialRainCounter)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval((uint32_t)TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(500)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[0]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[3]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[6]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[9]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[12]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[15]);
+}
+
+TEST(LedStripDriverWeatherTestGroup, incrementsRainCounterCorrectly)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(WEATHER_TEST_LED_CONFIG.resolutionMs, state.weatherRainCounter);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForIncrementedRainPosition)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[0]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[3]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[6]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[9]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[12]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[15]);
+}
+
+TEST(LedStripDriverWeatherTestGroup, incrementsRainPositionCorrectly)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = RAIN_INC_DELAY_MS - 1,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(1, state.weatherRainPosition);
+}
+
+TEST(LedStripDriverWeatherTestGroup, resetsRainCounterCorrectly)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = RAIN_INC_DELAY_MS - 1,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(0, state.weatherRainCounter);
+}
+
+TEST(LedStripDriverWeatherTestGroup, resetsRainPositionCorrectly)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = RAIN_INC_DELAY_MS - 1,
+    .weatherRainPosition = (uint8_t)WEATHER_TEST_LED_CONFIG.numLeds - 1,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(0, state.weatherRainPosition);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesWhenRainBandsWrapAround)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 2,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[0]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[3]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[6]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[9]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[12]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[15]);
+}
+
+TEST(LedStripDriverWeatherTestGroup, usesCorrectColourForRainBands)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_BLUE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[0]);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForIncreasedRainBandHeight)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+  const uint8_t RAIN_BAND_HEIGHT_LEDS = 3;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(RAIN_BAND_HEIGHT_LEDS)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[0]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[3]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[6]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[9]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[12]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[15]);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForIncreasedRainBandSpacing)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+  const uint8_t RAIN_BAND_HEIGHT_LEDS = 1;
+  const uint8_t RAIN_BAND_SPACING_LEDS = 3;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(RAIN_BAND_HEIGHT_LEDS)
+    ->rainBandSpacing(RAIN_BAND_SPACING_LEDS)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[0]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[3]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[6]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[9]);
+  verify_colour((Colour*)&COLOUR_RAIN, &lastValuesWritten[12]);
+  verify_colour((Colour*)&COLOUR_START, &lastValuesWritten[15]);
+}
+
+TEST(LedStripDriverWeatherTestGroup, doesNotIncrementsRainPositionIfCounterLessThanIncDelay)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_RAIN = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t RAIN_INC_DELAY_MS = 500;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->rainBandHeight(1)
+    ->rainBandSpacing(1)
+    ->rainBandIncrementDelay(RAIN_INC_DELAY_MS)
+    ->rainBandColour((Colour*)&COLOUR_RAIN);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = RAIN_INC_DELAY_MS - 2,
+    .weatherRainPosition = 0,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(0, state.weatherRainPosition);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForWeatherWarningInitialState)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_BLUE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = 0,
+    .weatherWarningFadeState = fadeIn,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  //'transparent' at first
+  verify_colours((Colour*)&COLOUR_START, lastValuesWritten, 6);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForWeatherWarningMidFadeInState)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const Colour COLOUR_MID = Colour(127, 127, 127);
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = WARNING_FADE_IN_MS/2 - 1,
+    .weatherWarningFadeState = fadeIn,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_MID, lastValuesWritten, 6);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForWeatherWarningEndOfFadeInState)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = WARNING_FADE_IN_MS - 2,
+    .weatherWarningFadeState = fadeIn,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_WARNING, lastValuesWritten, 6);
+}
+
+TEST(LedStripDriverWeatherTestGroup, incrementsWeatherWarningCounter)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = 0,
+    .weatherWarningFadeState = fadeIn,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(WEATHER_TEST_LED_CONFIG.resolutionMs, state.weatherWarningCounter);
+}
+
+TEST(LedStripDriverWeatherTestGroup, resetsWeatherWarningCounterAfterFadeIn)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = WARNING_FADE_IN_MS-1,
+    .weatherWarningFadeState = fadeIn,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(0, state.weatherWarningCounter);
+}
+
+TEST(LedStripDriverWeatherTestGroup, reversesWeatherWarningFadeDirectionAfterFadeIn)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = WARNING_FADE_IN_MS - WEATHER_TEST_LED_CONFIG.resolutionMs,
+    .weatherWarningFadeState = fadeIn,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  LONGS_EQUAL(fadeOut, state.weatherWarningFadeState);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForWeatherWarningMidFadeOutState)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const Colour COLOUR_MID = Colour(127, 127, 127);
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = WARNING_FADE_OUT_MS/2 - WEATHER_TEST_LED_CONFIG.resolutionMs,
+    .weatherWarningFadeState = fadeOut,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_MID, lastValuesWritten, 6);
+}
+
+TEST(LedStripDriverWeatherTestGroup, writesCorrectValuesForWeatherWarningDwellTime)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = WARNING_OFF_DWELL_MS - (2 * WEATHER_TEST_LED_CONFIG.resolutionMs),
+    .weatherWarningFadeState = offDwell,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  verify_colours((Colour*)&COLOUR_START, lastValuesWritten, 6);
+}
+
+TEST(LedStripDriverWeatherTestGroup, setsWarningFadeStateToFadeInAfterOffDwell)
+{
+  const Colour& COLOUR_START = COLOUR_RED;
+  const Colour& COLOUR_END = COLOUR_GREEN;
+  const Colour& COLOUR_WARNING = COLOUR_WHITE;
+  const uint32_t TEMPERATURE_FADE_INTERVAL_SECS = 4;
+  const uint32_t WARNING_FADE_IN_MS = 500;
+  const uint32_t WARNING_FADE_OUT_MS = 2000;
+  const uint32_t WARNING_OFF_DWELL_MS = 1000;
+
+  driver->pattern(Pattern::weather)
+    ->colourOn((Colour*)&COLOUR_START)
+    ->colourOff((Colour*)&COLOUR_END)
+    ->tempFadeInterval(TEMPERATURE_FADE_INTERVAL_SECS)
+    ->warningColour((Colour*)&COLOUR_WARNING)
+    ->warningFadeIn(WARNING_FADE_IN_MS)
+    ->warningFadeOut(WARNING_FADE_OUT_MS)
+    ->warningOffDwell(WARNING_OFF_DWELL_MS);
+
+  led_strip_state_t state = {
+    .counter = 0,
+    .weatherTempFadeDirection = 1,
+    .weatherRainCounter = 0,
+    .weatherRainPosition = 0,
+    .weatherWarningCounter = WARNING_OFF_DWELL_MS -  WEATHER_TEST_LED_CONFIG.resolutionMs,
+    .weatherWarningFadeState = offDwell,
+  };
+
+  driver->onTimerFired(&state, values);
+
+  CHECK_EQUAL(fadeIn, state.weatherWarningFadeState);
+}
+
+// weather warning colour
+// reset state before each new pattern
+// initial states test
+
+
+//<colour 1>,<colour 2>,<fade time (secs 0-999)>,<band depth (# leds)>,<band speed (ms 0-9999)>,<band spacing (#leds)>,<weather warning fade in time (0-9999 ms, 0=no warning)>,<weather warning fade out time (0-9999 ms)>,<weather warning off dwell time 0-9999ms>

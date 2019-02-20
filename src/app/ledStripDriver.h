@@ -19,6 +19,12 @@ enum Direction {
   reverse
 };
 
+enum FadeState {
+  fadeIn,
+  fadeOut,
+  offDwell
+};
+
 typedef struct {
   uint32_t numLeds;
   void (*writeValueFn)(uint8_t *values, uint32_t length);
@@ -27,10 +33,17 @@ typedef struct {
 
 typedef struct {
   uint32_t counter;
+
   int32_t dutyDirection;
   double dutyCycle;
+
   uint32_t progress;
+
   int8_t weatherTempFadeDirection;
+  uint32_t weatherRainCounter;
+  uint8_t weatherRainPosition;
+  uint32_t weatherWarningCounter;
+  FadeState weatherWarningFadeState;
 } led_strip_state_t;
 
 class LedStripDriver {
@@ -65,6 +78,14 @@ protected:
   Direction mProgressDirection;
 
   uint32_t mWeatherTempFadeIntervalSecs;
+  uint8_t mWeatherRainBandHeightLeds;
+  uint32_t mWeatherRainBandIncDelayMs;
+  uint8_t mWeatherRainBandSpacingLeds;
+  Colour *mWeatherRainBandColour;
+  Colour *mWeatherWarningColour;
+  uint32_t mWeatherWarningFadeInMs;
+  uint32_t mWeatherWarningFadeOutMs;
+  uint32_t mWeatherWarningOffDwellMs;
 
 public:
   void initState(led_strip_state_t *state);
@@ -110,7 +131,31 @@ public:
   LedStripDriver* finalValue(uint8_t progress);
 
   /* Used by weather pattern to set temperature fade interval (secs) */
-  LedStripDriver* tempFadeInterval(uint32_t progress);
+  LedStripDriver* tempFadeInterval(uint32_t fadeTimeMs);
+
+  /* Used by weather pattern to set rain band height */
+  LedStripDriver* rainBandHeight(uint8_t leds);
+
+  /* Used by weather pattern to set the delay between band movements */
+  LedStripDriver* rainBandIncrementDelay(uint32_t delayMs);
+
+  /* Used by weather pattern to set rain band spacing (# leds apart) */
+  LedStripDriver* rainBandSpacing(uint8_t leds);
+
+  /* Used by weather pattern to set rain band colour */
+  LedStripDriver* rainBandColour(Colour *colour);
+
+  /* Used by weather pattern to set weather warning colour */
+  LedStripDriver* warningColour(Colour *colour);
+
+  /* Used by weather pattern to set weather warning fade in time (ms) */
+  LedStripDriver* warningFadeIn(uint32_t fadeTimeMs);
+
+  /* Used by weather pattern to set weather warning fade in time (ms) */
+  LedStripDriver* warningFadeOut(uint32_t fadeTimeMs);
+
+  /* Used by weather pattern to set weather warning off dwell time (ms) */
+  LedStripDriver* warningOffDwell(uint32_t offDwellMs);
 
   /*
   * Used by progress pattern to set direction of increment
