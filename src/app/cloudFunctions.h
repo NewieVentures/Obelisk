@@ -10,6 +10,8 @@ class CloudFunctions {
   LedStripDriver *mLedDriver;
   Colour *mColourOn;
   Colour *mColourOff;
+  Colour *mWeatherRainColour;
+  Colour *mWeatherWarningColour;
 
   void deleteColours();
 
@@ -24,6 +26,7 @@ class CloudFunctions {
   int progress(String args);
   int pulse(String args);
   int snake(String args);
+  int weather(String args);
 };
 
 

@@ -9,8 +9,8 @@
 static LedStripDriver *ledDriver;
 static led_strip_state_t ledState;
 static uint8_t ledValues[NUM_LEDS * COLOURS_PER_LED];
-static const Colour COLOUR_START = COLOUR_RED;
-static const Colour COLOUR_END = COLOUR_BLUE;
+static const Colour COLOUR_START = COLOUR_BLUE;
+static const Colour COLOUR_END = COLOUR_BLACK;
 
 static void updateLedsDmx(uint8_t *values, uint32_t length) {
   dmx::send(values, length);
@@ -33,7 +33,8 @@ void ledStrip::setup() {
   ledDriver->initState(&ledState);
 
   //default pattern on power-up
-  ledDriver->pattern(Pattern::gradient)
+  ledDriver->pattern(Pattern::pulse)
+    ->period(2000)
     ->colourOn((Colour*)&COLOUR_START)
     ->colourOff((Colour*)&COLOUR_END);
 }

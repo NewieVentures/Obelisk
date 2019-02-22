@@ -367,3 +367,5 @@ TEST(CloudFunctionsTestGroup, pulsePassesCorrectArgsToLedDriver)
 
   delete cloudFunctions;
 }
+
+// TODO reset state before each new pattern

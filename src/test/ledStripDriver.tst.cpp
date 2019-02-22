@@ -1912,6 +1912,3 @@ TEST(LedStripDriverInitStateTestGroup, initialisesWeatherWarningFadeState)
 
   LONGS_EQUAL(fadeIn, state.weatherWarningFadeState);
 }
-
-
-//<colour 1>,<colour 2>,<fade time (secs 0-999)>,<band depth (# leds)>,<band speed (ms 0-9999)>,<band spacing (#leds)>,<weather warning fade in time (0-9999 ms, 0=no warning)>,<weather warning fade out time (0-9999 ms)>,<weather warning off dwell time 0-9999ms>

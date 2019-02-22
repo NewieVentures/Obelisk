@@ -4,7 +4,7 @@
 #define NUM_LEDS 18
 #define COLOURS_PER_LED 3
 
-#define TIMER_RESOLUTION_MS 5
+#define TIMER_RESOLUTION_MS 25
 
 #define COLOURS_PER_LED 3
 #define PWM_DUTY_STEPS 10

@@ -12,6 +12,7 @@
 #define ARG_COUNT_PROGRESS 8
 #define ARG_COUNT_PULSE 3
 #define ARG_COUNT_SNAKE 5
+#define ARG_COUNT_WEATHER 9
 
 const argParser::ArgInfo ARG_INFO_PERIOD_MS = {
   .type = ARG_TYPE_NUMBER,
@@ -73,6 +74,48 @@ const argParser::ArgInfo ARG_INFO_PROGRESS_RESET_DELAY_MS = {
   .max = 2147483647
 };
 
+const argParser::ArgInfo ARG_INFO_WEATHER_TEMP_FADE_IN = {
+  .type = ARG_TYPE_NUMBER,
+  .min = 0,
+  .max = 999
+};
+
+const argParser::ArgInfo ARG_INFO_WEATHER_RAIN_BAND_DEPTH = {
+  .type = ARG_TYPE_NUMBER,
+  .min = 0,
+  .max = NUM_LEDS_MAX-1
+};
+
+const argParser::ArgInfo ARG_INFO_WEATHER_RAIN_BAND_SPACING = {
+  .type = ARG_TYPE_NUMBER,
+  .min = 0,
+  .max = NUM_LEDS_MAX-1
+};
+
+const argParser::ArgInfo ARG_INFO_WEATHER_RAIN_BAND_SPEED = {
+  .type = ARG_TYPE_NUMBER,
+  .min = 0,
+  .max = 9999
+};
+
+const argParser::ArgInfo ARG_INFO_WEATHER_WARNING_FADE_IN = {
+  .type = ARG_TYPE_NUMBER,
+  .min = 0,
+  .max = 9999
+};
+
+const argParser::ArgInfo ARG_INFO_WEATHER_WARNING_FADE_OUT = {
+  .type = ARG_TYPE_NUMBER,
+  .min = 0,
+  .max = 9999
+};
+
+const argParser::ArgInfo ARG_INFO_WEATHER_WARNING_OFF_DWELL = {
+  .type = ARG_TYPE_NUMBER,
+  .min = 0,
+  .max = 9999
+};
+
 const argParser::ArgInfo ARG_INFO_COLOUR = {
   .type = ARG_TYPE_COLOUR
 };
@@ -112,6 +155,18 @@ const argParser::ArgInfo ARGS_INFO_PROGRESS[] = {
   ARG_INFO_PROGRESS_DIRECTION,
   ARG_INFO_COLOUR,
   ARG_INFO_COLOUR
+};
+
+const argParser::ArgInfo ARGS_INFO_WEATHER[] = {
+  ARG_INFO_COLOUR,
+  ARG_INFO_COLOUR,
+  ARG_INFO_WEATHER_TEMP_FADE_IN,
+  ARG_INFO_WEATHER_RAIN_BAND_DEPTH,
+  ARG_INFO_WEATHER_RAIN_BAND_SPEED,
+  ARG_INFO_WEATHER_RAIN_BAND_SPACING,
+  ARG_INFO_WEATHER_WARNING_FADE_IN,
+  ARG_INFO_WEATHER_WARNING_FADE_OUT,
+  ARG_INFO_WEATHER_WARNING_OFF_DWELL
 };
 
 const argParser::ArgInfo ARGS_INFO_GRADIENT[] = {
@@ -158,6 +213,11 @@ const argParser::ArgConfig ARG_CONFIG_SNAKE = {
   .length = ARG_COUNT_SNAKE,
 };
 
+const argParser::ArgConfig ARG_CONFIG_WEATHER = {
+  .info = ARGS_INFO_WEATHER,
+  .length = ARG_COUNT_WEATHER,
+};
+
 static Direction intToDirection(uint8_t value) {
   return value == 0 ? Direction::forward : Direction::reverse;
 }
@@ -166,6 +226,8 @@ CloudFunctions::CloudFunctions(LedStripDriver *ledDriver, int (*regFn)(String, i
   mLedDriver = ledDriver;
   mColourOn = new COLOUR_BLACK;
   mColourOff = new COLOUR_BLACK;
+  mWeatherRainColour = new COLOUR_WHITE;
+  mWeatherWarningColour = new COLOUR_WHITE;
 
   regFn(String("blink"), (&CloudFunctions::blink), this);
   regFn(String("colour"), (&CloudFunctions::colour), this);
@@ -174,6 +236,7 @@ CloudFunctions::CloudFunctions(LedStripDriver *ledDriver, int (*regFn)(String, i
   regFn(String("progress"), (&CloudFunctions::progress), this);
   regFn(String("pulse"), (&CloudFunctions::pulse), this);
   regFn(String("snake"), (&CloudFunctions::snake), this);
+  regFn(String("weather"), (&CloudFunctions::weather), this);
 }
 
 CloudFunctions::~CloudFunctions() {
@@ -354,6 +417,49 @@ int CloudFunctions::snake(String args) {
       ->snakeDirection(intToDirection(direction))
       ->colourOn(mColourOn)
       ->colourOff(mColourOff);
+  }
+
+  return result;
+}
+
+int CloudFunctions::weather(String args) {
+  String parsedArgs[ARG_COUNT_WEATHER];
+  int32_t result = parseAndValidateArgs(parsedArgs, &ARG_CONFIG_WEATHER, args);
+  uint32_t tempFadeSecs;
+  uint32_t bandDepth;
+  uint32_t bandSpeed;
+  uint32_t bandSpacing;
+  uint32_t warningFadeInMs;
+  uint32_t warningFadeOutMs;
+  uint32_t warningOffDwellMs;
+
+  if (result == 0) {
+    deleteColours();
+
+    mColourOn = new Colour(parsedArgs[0]);
+    mColourOff = new Colour(parsedArgs[1]);
+
+    strToInt(&tempFadeSecs, parsedArgs[2]);
+    strToInt(&bandDepth, parsedArgs[3]);
+    strToInt(&bandSpeed, parsedArgs[4]);
+    strToInt(&bandSpacing, parsedArgs[5]);
+    strToInt(&warningFadeInMs, parsedArgs[6]);
+    strToInt(&warningFadeOutMs, parsedArgs[7]);
+    strToInt(&warningOffDwellMs, parsedArgs[8]);
+
+    mLedDriver->pattern(Pattern::weather)
+      ->colourOn(mColourOn)
+      ->colourOff(mColourOff)
+      ->tempFadeInterval(tempFadeSecs)
+      ->rainBandHeight(bandDepth)
+      ->rainBandIncrementDelay(bandSpeed)
+      ->rainBandSpacing(bandSpacing)
+      ->rainBandColour(mWeatherRainColour)
+      ->rainDirection(Direction::reverse)
+      ->warningColour(mWeatherWarningColour)
+      ->warningFadeIn(warningFadeInMs)
+      ->warningFadeOut(warningFadeOutMs)
+      ->warningOffDwell(warningOffDwellMs);
   }
 
   return result;
