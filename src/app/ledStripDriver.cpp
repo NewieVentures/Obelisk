@@ -19,8 +19,12 @@ void LedStripDriver::initState(led_strip_state_t *state) {
   state->dutyCycle = 1;
   state->dutyDirection = DUTY_DIR_INC;
   state->weatherTempFadeDirection = 1;
+
   state->weatherRainCounter = 0;
   state->weatherRainPosition = 0;
+
+  state->weatherWarningCounter = 0;
+  state->weatherWarningFadeState = fadeIn;
 }
 
 LedStripDriver::LedStripDriver(led_strip_config_t *config) {
@@ -47,6 +51,7 @@ LedStripDriver::LedStripDriver(led_strip_config_t *config) {
   mWeatherRainBandIncDelayMs = 0;
   mWeatherRainBandSpacingLeds = 0;
   mWeatherRainBandColour = (Colour*)&COL_WHITE;
+  mWeatherRainDirection = Direction::forward;
 
   mWeatherWarningColour = (Colour*)&COL_WHITE;
   mWeatherWarningFadeInMs = 0;
@@ -292,6 +297,7 @@ void LedStripDriver::handleWeatherPattern(led_strip_state_t *state, uint8_t *val
   const uint32_t num_leds = mConfig->numLeds;
   uint32_t steps = ((mWeatherTempFadeIntervalSecs * 1000) / mConfig->resolutionMs) - 1;
   uint32_t currentStep = state->counter / mConfig->resolutionMs;
+
   uint8_t redVal, greenVal, blueVal;
   Colour *colourStart, *colourEnd;
 
@@ -354,11 +360,26 @@ void LedStripDriver::handleWeatherPattern(led_strip_state_t *state, uint8_t *val
     uint32_t bandAndSpacingHeight = mWeatherRainBandHeightLeds + mWeatherRainBandSpacingLeds;
     uint32_t rainInitialPosition = state->weatherRainPosition % bandAndSpacingHeight;
 
-    for (uint32_t i = rainInitialPosition; i < num_leds; i += bandAndSpacingHeight) {
-      for (uint32_t j = 0; j < mWeatherRainBandHeightLeds; j++) {
-        values[(i+j) * COLOURS_PER_LED + INDEX_RED] = mWeatherRainBandColour->getRed();
-        values[(i+j) * COLOURS_PER_LED + INDEX_GREEN] = mWeatherRainBandColour->getGreen();
-        values[(i+j) * COLOURS_PER_LED + INDEX_BLUE] = mWeatherRainBandColour->getBlue();
+    if (mWeatherRainDirection == Direction::forward) {
+      for (uint32_t i = rainInitialPosition; i < num_leds; i += bandAndSpacingHeight) {
+        for (uint32_t j = 0; j < mWeatherRainBandHeightLeds; j++) {
+          if ((i+j) < num_leds) { //all bands may not fit on the LED strip, stop before overflow
+            values[(i+j) * COLOURS_PER_LED + INDEX_RED] = mWeatherRainBandColour->getRed();
+            values[(i+j) * COLOURS_PER_LED + INDEX_GREEN] = mWeatherRainBandColour->getGreen();
+            values[(i+j) * COLOURS_PER_LED + INDEX_BLUE] = mWeatherRainBandColour->getBlue();
+          }
+        }
+      }
+    } else {
+      for (int32_t i = (num_leds - 1 - rainInitialPosition); i > 0; i -= bandAndSpacingHeight) {
+        for (uint32_t j = 0; j < mWeatherRainBandHeightLeds; j++) {
+          //all bands may not fit on the LED strip, stop before overflow
+          if ((i+j) < num_leds && (i+j) >= 0) {
+            values[(i+j) * COLOURS_PER_LED + INDEX_RED] = mWeatherRainBandColour->getRed();
+            values[(i+j) * COLOURS_PER_LED + INDEX_GREEN] = mWeatherRainBandColour->getGreen();
+            values[(i+j) * COLOURS_PER_LED + INDEX_BLUE] = mWeatherRainBandColour->getBlue();
+          }
+        }
       }
     }
   }
@@ -598,6 +619,11 @@ LedStripDriver* LedStripDriver::rainBandSpacing(uint8_t leds) {
 /* Used by weather pattern to set rain band colour */
 LedStripDriver* LedStripDriver::rainBandColour(Colour *colour) {
   mWeatherRainBandColour = colour;
+  return this;
+}
+
+LedStripDriver* LedStripDriver::rainDirection(Direction direction) {
+  mWeatherRainDirection = direction;
   return this;
 }
 

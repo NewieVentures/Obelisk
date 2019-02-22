@@ -82,6 +82,7 @@ protected:
   uint32_t mWeatherRainBandIncDelayMs;
   uint8_t mWeatherRainBandSpacingLeds;
   Colour *mWeatherRainBandColour;
+  Direction mWeatherRainDirection;
   Colour *mWeatherWarningColour;
   uint32_t mWeatherWarningFadeInMs;
   uint32_t mWeatherWarningFadeOutMs;
@@ -131,7 +132,7 @@ public:
   LedStripDriver* finalValue(uint8_t progress);
 
   /* Used by weather pattern to set temperature fade interval (secs) */
-  LedStripDriver* tempFadeInterval(uint32_t fadeTimeMs);
+  LedStripDriver* tempFadeInterval(uint32_t fadeTimeSecs);
 
   /* Used by weather pattern to set rain band height */
   LedStripDriver* rainBandHeight(uint8_t leds);
@@ -144,6 +145,13 @@ public:
 
   /* Used by weather pattern to set rain band colour */
   LedStripDriver* rainBandColour(Colour *colour);
+
+  /*
+  * Used by weather pattern to set direction of rain
+  * eg forward = first LED to last
+  *    reverse = last LED to first
+  */
+  LedStripDriver* rainDirection(Direction direction);
 
   /* Used by weather pattern to set weather warning colour */
   LedStripDriver* warningColour(Colour *colour);
