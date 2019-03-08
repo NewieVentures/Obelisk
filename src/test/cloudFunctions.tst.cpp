@@ -79,6 +79,11 @@ TEST(CloudFunctionsTestGroup, registersFunctions)
     .withParameter("fn", (void*)&CloudFunctions::pulse)
     .withParameter("cls", cloudFunctions);
 
+  mock().expectOneCall("registerFunction")
+    .withParameter("name", "weather")
+    .withParameter("fn", (void*)&CloudFunctions::weather)
+    .withParameter("cls", cloudFunctions);
+
   cloudFunctions = new CloudFunctions(ledStripDriver, &registerFunction);
   delete cloudFunctions;
 }

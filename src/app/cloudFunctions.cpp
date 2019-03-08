@@ -246,10 +246,22 @@ CloudFunctions::~CloudFunctions() {
 void CloudFunctions::deleteColours() {
   if (mColourOn != nullptr) {
     delete mColourOn;
+    mColourOn = nullptr;
   }
 
   if (mColourOff != nullptr) {
     delete mColourOff;
+    mColourOff = nullptr;
+  }
+
+  if (mWeatherRainColour != nullptr) {
+    delete mWeatherRainColour;
+    mWeatherRainColour = nullptr;
+  }
+
+  if (mWeatherWarningColour != nullptr) {
+    delete mWeatherWarningColour;
+    mWeatherWarningColour = nullptr;
   }
 }
 
